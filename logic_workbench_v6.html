@@ -1,0 +1,2335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Logic Gates Workbench v3</title>
+<style>
+/* ══════════════════════════════════════════════════
+   CSS VARIABLES — DARK THEME (default)
+══════════════════════════════════════════════════ */
+:root {
+  --bg-body:        #1a1a2e;
+  --bg-toolbar:     #16213e;
+  --bg-canvas:      #1a1a2e;
+  --bg-comp:        #16213e;
+  --bg-panel:       #0d1b2a;
+  --bg-panel-hdr:   #0f2a40;
+  --bg-input:       #0a1520;
+  --bg-modal:       #0d1b2a;
+  --bg-wire-bar:    #0d1b2a;
+
+  --border-main:    #0f3460;
+  --border-comp:    #2a5298;
+  --border-panel:   #1a4a80;
+  --border-inner:   #1a3a5a;
+
+  --text-primary:   #e0e0e0;
+  --text-secondary: #888;
+  --text-label:     #a0c4ff;
+  --text-muted:     #556;
+  --text-expr:      #666;
+  --text-badge:     #a0c4ff;
+
+  --port-bg:        #2a5298;
+  --port-border:    #4a9eff;
+
+  --switch-bg:      #1a2a1a;
+  --switch-on-bg:   #1e4a1e;
+  --switch-off-txt: #3a7a3a;
+  --switch-key-col: #3a6a3a;
+
+  --led-bg:         #2a1a1a;
+  --led-on-bg:      #4a1a1a;
+  --led-off-circle: #333;
+  --led-off-border: #555;
+
+  --status-bg:      rgba(22,33,62,.95);
+  --status-border:  #0f3460;
+
+  --grid-line:      rgba(255,255,255,.03);
+  --sep-color:      #333;
+  --btn-border:     #333;
+  --btn-color:      #ccc;
+  --modal-close-border: #333;
+  --modal-close-color:  #aaa;
+  --count-bg:       #0f3460;
+  --count-border:   #2a5298;
+  --tt-head-bg:     #0f3460;
+  --tt-even-bg:     #0a1520;
+  --gen-syntax-col: #445;
+  --bool-sec-label: #556;
+  --bool-expr-col:  #a0c4ff;
+  --bool-empty-col: #3a4a5a;
+  --divider-col:    #1a3a5a;
+  --collapse-col:   #667;
+  --gen-ph-col:     #3a5a6a;
+  --wire-bar-span:  #778;
+  --wc-active-brd:  #fff;
+}
+
+/* ── LIGHT THEME ── */
+body.light {
+  --bg-body:        #f0f4f8;
+  --bg-toolbar:     #ffffff;
+  --bg-canvas:      #f0f4f8;
+  --bg-comp:        #ffffff;
+  --bg-panel:       #ffffff;
+  --bg-panel-hdr:   #e8f0fe;
+  --bg-input:       #f5f7fa;
+  --bg-modal:       #ffffff;
+  --bg-wire-bar:    #ffffff;
+
+  --border-main:    #c8d8f0;
+  --border-comp:    #7aafff;
+  --border-panel:   #b0ccff;
+  --border-inner:   #c8d8f0;
+
+  --text-primary:   #1a1a2e;
+  --text-secondary: #555;
+  --text-label:     #1a5abf;
+  --text-muted:     #778;
+  --text-expr:      #666;
+  --text-badge:     #1a5abf;
+
+  --port-bg:        #7aafff;
+  --port-border:    #1a5abf;
+
+  --switch-bg:      #e6f7ee;
+  --switch-on-bg:   #c6f0d6;
+  --switch-off-txt: #2a8a4a;
+  --switch-key-col: #4aaa6a;
+
+  --led-bg:         #fde8e8;
+  --led-on-bg:      #fcc8c8;
+  --led-off-circle: #ddd;
+  --led-off-border: #bbb;
+
+  --status-bg:      rgba(255,255,255,.95);
+  --status-border:  #b0ccff;
+
+  --grid-line:      rgba(0,0,0,.06);
+  --sep-color:      #dde;
+  --btn-border:     #ccd;
+  --btn-color:      #334;
+  --modal-close-border: #ccd;
+  --modal-close-color:  #667;
+  --count-bg:       #e8f0fe;
+  --count-border:   #7aafff;
+  --tt-head-bg:     #e8f0fe;
+  --tt-even-bg:     #f5f7fa;
+  --gen-syntax-col: #667;
+  --bool-sec-label: #778;
+  --bool-expr-col:  #1a5abf;
+  --bool-empty-col: #aab;
+  --divider-col:    #dde;
+  --collapse-col:   #99a;
+  --gen-ph-col:     #9aabb;
+  --wire-bar-span:  #556;
+  --wc-active-brd:  #1a1a2e;
+}
+
+/* ── WATERMARK ── */
+#watermark {
+  position: absolute; bottom: 44px; right: 12px;
+  font-size: 11px; font-family: system-ui;
+  color: var(--text-primary); opacity: 0.13;
+  pointer-events: none; user-select: none;
+  letter-spacing: .5px; z-index: 5;
+  white-space: nowrap;
+}
+
+/* ── THEME TOGGLE BUTTON ── */
+#theme-toggle {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 12px; border-radius: 20px;
+  border: 1px solid var(--btn-border);
+  background: transparent; color: var(--btn-color);
+  cursor: pointer; font-size: 12px; transition: all .2s;
+  user-select: none;
+}
+#theme-toggle:hover { border-color: var(--port-border); color: var(--text-label); }
+.toggle-track {
+  width: 30px; height: 16px; border-radius: 8px;
+  background: #2a5298; position: relative; transition: background .2s;
+}
+body.light .toggle-track { background: #f0a030; }
+.toggle-thumb {
+  position: absolute; top: 2px; left: 2px;
+  width: 12px; height: 12px; border-radius: 50%;
+  background: #fff; transition: transform .2s;
+}
+body.light .toggle-thumb { transform: translateX(14px); }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, sans-serif; background: var(--bg-body); color: var(--text-primary); overflow: hidden; height: 100vh; display: flex; flex-direction: column; transition: background .2s, color .2s; }
+
+/* ── TOOLBAR ── */
+#toolbar {
+  background: var(--bg-toolbar); border-bottom: 1px solid var(--border-main);
+  padding: 8px 12px; display: flex; align-items: center;
+  gap: 8px; flex-wrap: wrap; flex-shrink: 0; z-index: 10;
+}
+.toolbar-label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-right: 4px; }
+.comp-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 6px 10px; background: var(--count-bg); border: 1px solid var(--border-panel);
+  border-radius: 8px; cursor: grab; font-size: 11px; color: var(--text-label);
+  transition: all .15s; user-select: none;
+}
+.comp-btn:hover { background: var(--border-panel); border-color: var(--port-border); color: var(--text-primary); }
+.comp-btn svg { display: block; }
+.action-btn {
+  padding: 6px 14px; border-radius: 8px; border: 1px solid var(--btn-border);
+  background: transparent; color: var(--btn-color); cursor: pointer; font-size: 12px; transition: all .15s;
+}
+.action-btn:hover { background: var(--btn-border); color: var(--text-primary); }
+.action-btn.danger:hover { background: #8b2020; border-color: #c0392b; color: #fff; }
+.action-btn.success { border-color: #27ae60; color: #2ecc71; }
+.action-btn.success:hover { background: #1a5c35; color: #fff; }
+.sep { width: 1px; height: 32px; background: var(--sep-color); margin: 0 4px; }
+
+/* ── MAIN ── */
+#main { display: flex; flex: 1; overflow: hidden; }
+
+/* ── CANVAS ── */
+#canvas-wrap {
+  flex: 1; position: relative; overflow: hidden; background: var(--bg-canvas);
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 24px 24px;
+  transition: background-color .2s;
+}
+#canvas { position: absolute; top:0; left:0; width:100%; height:100%; }
+#wire-layer { position: absolute; top:0; left:0; width:100%; height:100%; pointer-events: none; }
+
+/* ── COMPONENTS ── */
+.component { position: absolute; cursor: move; user-select: none; }
+.component.selected .comp-body { outline: 2px solid var(--port-border); outline-offset: 2px; }
+.comp-body {
+  background: var(--bg-comp); border: 1.5px solid var(--border-comp); border-radius: 10px;
+  padding: 8px 10px 6px; text-align: center; min-width: 80px; position: relative;
+  transition: background .2s, border-color .2s;
+}
+.comp-body .comp-label { font-size: 12px; font-weight: 600; color: var(--text-label); }
+.comp-body .comp-expr  { font-size: 10px; color: var(--text-expr); font-family: monospace; }
+.comp-body .comp-inputs-badge { font-size: 9px; color: var(--text-muted); margin-top: 1px; }
+
+.port {
+  position: absolute; width: 12px; height: 12px; border-radius: 50%;
+  background: var(--port-bg); border: 2px solid var(--port-border); cursor: crosshair;
+  transition: all .1s; z-index: 10;
+}
+.port:hover { background: var(--port-border); transform: scale(1.4); }
+.port.output { right: -7px; }
+.port.input  { left:  -7px; }
+
+/* ── SWITCH ── */
+.switch-comp .comp-body { background: var(--switch-bg); border-color: #27ae60; cursor: pointer; }
+.switch-comp .comp-body:hover { border-color: #2ecc71; }
+.switch-on  .comp-body { background: var(--switch-on-bg); border-color: #2ecc71; }
+.switch-name { font-size: 20px; font-weight: 800; line-height: 1; }
+.switch-on  .switch-name { color: #2ecc71; }
+.switch-off .switch-name { color: var(--switch-off-txt); }
+.switch-val  { font-size: 11px; font-family: monospace; margin-top: 2px; }
+.switch-on  .switch-val  { color: #2ecc71; }
+.switch-off .switch-val  { color: var(--text-muted); }
+.switch-key  { font-size: 9px; color: var(--switch-key-col); margin-top: 1px; }
+.switch-on  .switch-key  { color: #1a5a1a; }
+
+/* ── LED ── */
+.led-comp .comp-body { background: var(--led-bg); border-color: #c0392b; cursor: pointer; }
+.led-comp .comp-body:hover { border-color: #ff6060; }
+.led-on   .comp-body { background: var(--led-on-bg); border-color: #e74c3c; }
+.led-circle { width: 28px; height: 28px; border-radius: 50%; margin: 3px auto; background: var(--led-off-circle); border: 2px solid var(--led-off-border); transition: all .2s; }
+.led-on .led-circle { background: #e74c3c; border-color: #ff6b6b; box-shadow: 0 0 12px #e74c3c; }
+.led-name { font-size: 13px; font-weight: 700; color: #c0392b; letter-spacing: .5px; margin-bottom: 1px; }
+.led-on .led-name { color: #ff6b6b; }
+.led-label { font-size: 9px; color: var(--text-expr); }
+.led-on .led-label { color: #c0392b; }
+.led-click-hint { font-size: 8px; color: var(--text-muted); margin-top: 2px; opacity: .6; }
+
+/* ── STATUS / DEL HINT ── */
+#status {
+  position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+  background: var(--status-bg); border: 1px solid var(--status-border); border-radius: 20px;
+  padding: 6px 16px; font-size: 12px; color: var(--text-secondary); pointer-events: none; white-space: nowrap;
+}
+#del-hint {
+  position: absolute; top: 10px; right: 10px;
+  background: rgba(139,32,32,.9); border: 1px solid #c0392b;
+  border-radius: 8px; padding: 6px 12px; font-size: 12px; color: #ff8888; display: none;
+}
+
+/* ── WIRE COLOR TOOLBAR ── */
+#wire-color-bar {
+  display: none;
+  position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+  background: var(--bg-wire-bar); border: 1px solid var(--border-panel); border-radius: 10px;
+  padding: 6px 12px; gap: 8px; align-items: center; z-index: 60;
+  box-shadow: 0 4px 20px rgba(0,0,0,.3);
+}
+#wire-color-bar.visible { display: flex; }
+#wire-color-bar span { font-size: 11px; color: var(--wire-bar-span); white-space: nowrap; }
+.wc-btn {
+  width: 24px; height: 24px; border-radius: 50%; border: 2px solid transparent;
+  cursor: pointer; transition: all .15s; flex-shrink: 0;
+}
+.wc-btn:hover { transform: scale(1.2); }
+.wc-btn.wc-active { border-color: var(--wc-active-brd); box-shadow: 0 0 6px currentColor; }
+.wc-btn.wc-blue   { background: #4a9eff; }
+.wc-btn.wc-red    { background: #ff5555; }
+.wc-btn.wc-yellow { background: #ffe033; }
+.wc-btn.wc-clear  { background: #2ecc71; font-size: 10px; color: #000; display:flex; align-items:center; justify-content:center; border-radius: 6px; width:36px; height:24px; font-weight:600; }
+#wire-del-btn {
+  padding: 3px 10px; border-radius: 6px; border: 1px solid #c0392b;
+  background: transparent; color: #ff8888; cursor: pointer; font-size: 11px; transition: all .15s;
+}
+#wire-del-btn:hover { background: #8b2020; color: #fff; }
+
+/* ═══════════════════════════════════════════
+   BOOLEAN ALGEBRA PANEL
+═══════════════════════════════════════════ */
+#bool-panel {
+  position: absolute; bottom: 44px; left: 12px; width: 320px;
+  background: var(--bg-panel); border: 1px solid var(--border-panel);
+  border-radius: 12px; z-index: 50; overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0,0,0,.2);
+  transition: background .2s, border-color .2s;
+}
+#bool-panel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 12px; background: var(--bg-panel-hdr);
+  border-bottom: 1px solid var(--border-panel);
+  cursor: move; user-select: none;
+}
+#bool-panel-header span { font-size: 11px; font-weight: 600; color: var(--text-label); letter-spacing: .5px; }
+.bool-collapse-btn {
+  background: transparent; border: none; color: var(--collapse-col); cursor: pointer;
+  font-size: 14px; padding: 0 2px; line-height: 1; transition: color .15s;
+}
+.bool-collapse-btn:hover { color: var(--text-label); }
+#bool-panel-body { padding: 10px 12px; }
+#bool-expr-section { margin-bottom: 10px; }
+.bool-section-label { font-size: 9px; color: var(--bool-sec-label); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+#bool-expr-display {
+  background: var(--bg-input); border: 1px solid var(--border-inner); border-radius: 8px;
+  padding: 8px 10px; font-family: monospace; font-size: 13px; color: var(--bool-expr-col);
+  min-height: 32px; word-break: break-all; line-height: 1.5;
+}
+#bool-expr-display.empty { color: var(--bool-empty-col); font-style: italic; font-size: 11px; }
+.bool-divider { height: 1px; background: var(--divider-col); margin: 10px 0; }
+#bool-gen-input {
+  width: 100%; background: var(--bg-input); border: 1px solid var(--border-inner); border-radius: 8px;
+  padding: 7px 10px; color: var(--text-primary); font-family: monospace; font-size: 12px;
+  outline: none; transition: border-color .15s; margin-bottom: 7px;
+}
+#bool-gen-input:focus { border-color: var(--port-border); }
+#bool-gen-input::placeholder { color: var(--gen-ph-col); }
+.gen-syntax { font-size: 10px; color: var(--gen-syntax-col); line-height: 1.6; margin-bottom: 7px; }
+.gen-syntax code { color: var(--text-label); background: var(--bg-input); border-radius: 3px; padding: 0 3px; }
+#bool-gen-btn {
+  width: 100%; padding: 8px; border-radius: 8px;
+  border: 1px solid var(--port-border); background: transparent; color: var(--port-border);
+  cursor: pointer; font-size: 12px; font-weight: 600; transition: all .15s;
+}
+#bool-gen-btn:hover { background: var(--count-bg); }
+#bool-gen-error { font-size: 11px; color: #e74c3c; margin-top: 5px; min-height: 16px; }
+#bool-panel.collapsed #bool-panel-body { display: none; }
+
+/* ═══════════════════════════════════════════
+   GATE INSPECT MODAL
+═══════════════════════════════════════════ */
+#modal-overlay {
+  display: none; position: absolute; top:0; left:0; right:0; bottom:0;
+  background: rgba(0,0,0,.35); z-index: 100;
+  align-items: flex-start; justify-content: flex-end;
+}
+#modal-overlay.open { display: flex; }
+#gate-modal {
+  width: 300px; height: 100%; background: var(--bg-modal);
+  border-left: 1px solid var(--border-panel); display: flex; flex-direction: column;
+  overflow: hidden; animation: slideIn .2s ease;
+  transition: background .2s;
+}
+@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+#modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px; border-bottom: 1px solid var(--border-inner); flex-shrink: 0;
+}
+#modal-title { font-size: 15px; font-weight: 600; }
+#modal-close {
+  width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--modal-close-border);
+  background: transparent; color: var(--modal-close-color); cursor: pointer; font-size: 16px;
+  display: flex; align-items: center; justify-content: center; transition: all .15s;
+}
+#modal-close:hover { background: #8b2020; border-color: #c0392b; color: #fff; }
+#modal-body { flex:1; overflow-y: auto; padding: 16px; }
+.modal-section { margin-bottom: 18px; }
+.modal-section-title { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: 600; }
+.input-count-row { display: flex; align-items: center; gap: 10px; }
+.count-btn {
+  width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--count-border);
+  background: var(--count-bg); color: var(--text-label); cursor: pointer; font-size: 18px;
+  display: flex; align-items: center; justify-content: center; transition: all .15s;
+}
+.count-btn:hover { background: var(--border-panel); border-color: var(--port-border); color: var(--text-primary); }
+.count-btn:disabled { opacity: .3; cursor: not-allowed; }
+.count-display { font-size: 22px; font-weight: 700; font-family: monospace; color: var(--port-border); min-width: 32px; text-align: center; }
+.count-label { font-size: 12px; color: var(--text-muted); }
+.tt-table { width: 100%; border-collapse: collapse; font-size: 12px; font-family: monospace; }
+.tt-table th { background: var(--tt-head-bg); color: var(--text-label); padding: 5px 8px; text-align: center; font-weight: 600; border: 1px solid var(--border-panel); }
+.tt-table td { padding: 5px 8px; text-align: center; border: 1px solid var(--border-inner); color: var(--text-primary); }
+.tt-table tr.tt-active { background: var(--tt-head-bg) !important; }
+.tt-table tr:nth-child(even) td { background: var(--tt-even-bg); }
+.tt-val-1 { color: #2ecc71 !important; font-weight: 700; }
+.tt-val-0 { color: #e74c3c !important; }
+.gate-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; border: 1px solid; }
+.gate-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.5; margin-top: 8px; }
+.apply-btn { width: 100%; padding: 9px; border-radius: 8px; border: 1px solid #27ae60; background: transparent; color: #2ecc71; cursor: pointer; font-size: 13px; font-weight: 500; transition: all .15s; }
+.apply-btn:hover { background: #1a5c35; color: #fff; }
+
+/* ═══════════════════════════════════════════
+   LED TRUTH TABLE MODAL
+═══════════════════════════════════════════ */
+#led-modal-overlay {
+  display: none; position: absolute; top:0; left:0; right:0; bottom:0;
+  background: rgba(0,0,0,.5); z-index: 200;
+  align-items: center; justify-content: center;
+}
+#led-modal-overlay.open { display: flex; }
+#led-modal {
+  width: 420px; max-height: 80vh;
+  background: var(--bg-modal); border: 1px solid #c0392b;
+  border-radius: 14px; display: flex; flex-direction: column;
+  overflow: hidden; animation: popIn .18s ease;
+  box-shadow: 0 8px 40px rgba(0,0,0,.5);
+}
+@keyframes popIn { from { transform: scale(.92); opacity:0; } to { transform: scale(1); opacity:1; } }
+#led-modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px; border-bottom: 1px solid var(--led-bg); flex-shrink: 0;
+  background: var(--led-bg);
+}
+#led-modal-title { font-size: 15px; font-weight: 700; color: #ff6b6b; }
+#led-modal-subtitle { font-size: 11px; color: var(--text-secondary); margin-top: 2px; font-family: monospace; }
+#led-modal-close {
+  width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--modal-close-border);
+  background: transparent; color: var(--modal-close-color); cursor: pointer; font-size: 16px;
+  display: flex; align-items: center; justify-content: center; transition: all .15s;
+}
+#led-modal-close:hover { background: #8b2020; color: #fff; border-color: #c0392b; }
+#led-modal-body { flex:1; overflow-y: auto; padding: 16px 18px; }
+.led-tt-expr {
+  background: var(--bg-input); border: 1px solid var(--border-inner); border-radius: 8px;
+  padding: 8px 12px; font-family: monospace; font-size: 13px; color: var(--text-label);
+  margin-bottom: 14px; word-break: break-all; line-height: 1.5;
+}
+.led-tt-table { width: 100%; border-collapse: collapse; font-size: 13px; font-family: monospace; }
+.led-tt-table th {
+  background: var(--led-bg); color: #ff8888; padding: 7px 10px;
+  text-align: center; font-weight: 700; border: 1px solid var(--led-on-bg);
+}
+.led-tt-table th.out-col { color: #ff4444; background: var(--led-on-bg); }
+.led-tt-table td { padding: 6px 10px; text-align: center; border: 1px solid var(--border-inner); color: var(--text-primary); }
+.led-tt-table tr:nth-child(even) td { background: var(--tt-even-bg); }
+.led-tt-table tr.tt-active-row { background: var(--led-bg) !important; }
+.led-tt-table tr.tt-active-row td { border-color: #c0392b; }
+.lv1 { color: #2ecc71 !important; font-weight: 700; }
+.lv0 { color: #e74c3c !important; }
+
+/* ══════════════════════════════════════════════════
+   MOBILE STYLES
+══════════════════════════════════════════════════ */
+
+/* ── Toolbar: scrollable row on mobile ── */
+@media (max-width: 700px) {
+  #toolbar {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding: 6px 8px;
+    gap: 6px;
+    scrollbar-width: none;
+  }
+  #toolbar::-webkit-scrollbar { display: none; }
+
+  .toolbar-label { display: none; }
+
+  .comp-btn {
+    flex-shrink: 0;
+    padding: 8px 10px;
+    font-size: 10px;
+    min-width: 52px;
+  }
+
+  .action-btn {
+    flex-shrink: 0;
+    padding: 7px 10px;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  /* Hide desktop-only hint text */
+  #toolbar > div[style*="margin-left:auto"] { display: none; }
+
+  /* Ports bigger for touch */
+  .port {
+    width: 20px !important;
+    height: 20px !important;
+  }
+  .port.output { right: -11px !important; }
+  .port.input  { left:  -11px !important; }
+
+  /* Component bodies slightly bigger */
+  .comp-body { padding: 10px 12px 8px; min-width: 72px; }
+  .comp-body .comp-label { font-size: 13px; }
+  .switch-name { font-size: 22px !important; }
+  .led-circle  { width: 32px !important; height: 32px !important; }
+
+  /* Bool panel: collapsed by default, positioned better */
+  #bool-panel {
+    width: 90vw;
+    max-width: 320px;
+    bottom: 56px;
+    left: 8px;
+  }
+
+  /* Status bar smaller */
+  #status {
+    font-size: 10px;
+    padding: 4px 10px;
+    bottom: 8px;
+    max-width: 90vw;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.4;
+  }
+
+  /* del-hint */
+  #del-hint { font-size: 10px; padding: 4px 8px; }
+
+  /* Wire color bar */
+  #wire-color-bar { flex-wrap: wrap; max-width: 90vw; }
+
+  /* Modals full width */
+  #gate-modal  { width: 100% !important; }
+  #led-modal   { width: 94vw !important; }
+}
+
+/* ── ZOOM SIDEBAR ── */
+#zoom-bar {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: 50;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-panel);
+  border-radius: 14px;
+  padding: 10px 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.25);
+  user-select: none;
+  touch-action: none;
+}
+.zoom-btn {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  border: 1px solid var(--border-comp);
+  background: var(--count-bg);
+  color: var(--text-label);
+  font-size: 18px; font-weight: 700;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.zoom-btn:hover  { background: var(--border-panel); border-color: var(--port-border); color: #fff; }
+.zoom-btn:active { transform: scale(.92); }
+#zoom-label {
+  font-size: 10px;
+  font-family: monospace;
+  color: var(--text-label);
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+#zoom-track {
+  width: 6px;
+  height: 120px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-inner);
+  border-radius: 3px;
+  position: relative;
+  cursor: pointer;
+}
+#zoom-fill {
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 100%;
+  background: var(--port-border);
+  border-radius: 3px;
+  transition: height .05s;
+}
+#zoom-thumb {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--port-border);
+  border: 2px solid var(--bg-panel);
+  box-shadow: 0 2px 6px rgba(0,0,0,.4);
+  cursor: grab;
+  transition: bottom .05s;
+}
+#zoom-thumb:active { cursor: grabbing; transform: translateX(-50%) scale(1.15); }
+#zoom-reset {
+  font-size: 9px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  transition: all .15s;
+  white-space: nowrap;
+}
+#zoom-reset:hover { border-color: var(--border-comp); color: var(--text-label); }
+
+@media (max-width: 700px) {
+  #zoom-bar {
+    left: 6px;
+    padding: 8px 6px;
+    gap: 6px;
+  }
+  #zoom-track { height: 90px; }
+  .zoom-btn { width: 28px; height: 28px; font-size: 16px; }
+}
+
+/* ── Touch-action ── */
+#toolbar     { touch-action: pan-x; }
+#canvas-wrap { touch-action: none; }
+#zoom-track  { touch-action: none; }
+
+
+</style>
+</head>
+<body>
+
+<div id="toolbar">
+  <span class="toolbar-label">Add:</span>
+  <div class="comp-btn" draggable="true" data-type="INPUT">
+    <svg width="28" height="20" viewBox="0 0 28 20">
+      <rect x="2" y="6" width="16" height="8" rx="4" fill="#27ae60" opacity="0.3" stroke="#27ae60" stroke-width="1.5"/>
+      <circle cx="20" cy="10" r="4" fill="#27ae60"/>
+    </svg>Switch
+  </div>
+  <div class="comp-btn" draggable="true" data-type="AND">
+    <svg width="36" height="24" viewBox="0 0 36 24">
+      <path d="M4 4 L14 4 Q26 4 26 12 Q26 20 14 20 L4 20 Z" fill="none" stroke="#4a9eff" stroke-width="1.5"/>
+      <line x1="0" y1="8" x2="4" y2="8" stroke="#4a9eff" stroke-width="1.5"/>
+      <line x1="0" y1="16" x2="4" y2="16" stroke="#4a9eff" stroke-width="1.5"/>
+      <line x1="26" y1="12" x2="36" y2="12" stroke="#4a9eff" stroke-width="1.5"/>
+    </svg>AND
+  </div>
+  <div class="comp-btn" draggable="true" data-type="OR">
+    <svg width="36" height="24" viewBox="0 0 36 24">
+      <path d="M4 4 Q10 4 16 4 Q28 4 28 12 Q28 20 16 20 Q10 20 4 20 Q10 12 4 4 Z" fill="none" stroke="#a855f7" stroke-width="1.5"/>
+      <line x1="0" y1="8" x2="6" y2="8" stroke="#a855f7" stroke-width="1.5"/>
+      <line x1="0" y1="16" x2="6" y2="16" stroke="#a855f7" stroke-width="1.5"/>
+      <line x1="28" y1="12" x2="36" y2="12" stroke="#a855f7" stroke-width="1.5"/>
+    </svg>OR
+  </div>
+  <div class="comp-btn" draggable="true" data-type="NOT">
+    <svg width="36" height="24" viewBox="0 0 36 24">
+      <polygon points="4,4 22,12 4,20" fill="none" stroke="#f59e0b" stroke-width="1.5"/>
+      <circle cx="25" cy="12" r="3" fill="none" stroke="#f59e0b" stroke-width="1.5"/>
+      <line x1="0" y1="12" x2="4" y2="12" stroke="#f59e0b" stroke-width="1.5"/>
+      <line x1="28" y1="12" x2="36" y2="12" stroke="#f59e0b" stroke-width="1.5"/>
+    </svg>NOT
+  </div>
+  <div class="comp-btn" draggable="true" data-type="NAND">
+    <svg width="36" height="24" viewBox="0 0 36 24">
+      <path d="M4 4 L13 4 Q23 4 23 12 Q23 20 13 20 L4 20 Z" fill="none" stroke="#ec4899" stroke-width="1.5"/>
+      <circle cx="26" cy="12" r="3" fill="none" stroke="#ec4899" stroke-width="1.5"/>
+      <line x1="0" y1="8" x2="4" y2="8" stroke="#ec4899" stroke-width="1.5"/>
+      <line x1="0" y1="16" x2="4" y2="16" stroke="#ec4899" stroke-width="1.5"/>
+      <line x1="29" y1="12" x2="36" y2="12" stroke="#ec4899" stroke-width="1.5"/>
+    </svg>NAND
+  </div>
+  <div class="comp-btn" draggable="true" data-type="NOR">
+    <svg width="36" height="24" viewBox="0 0 36 24">
+      <path d="M4 4 Q9 4 14 4 Q25 4 25 12 Q25 20 14 20 Q9 20 4 20 Q9 12 4 4 Z" fill="none" stroke="#14b8a6" stroke-width="1.5"/>
+      <circle cx="28" cy="12" r="3" fill="none" stroke="#14b8a6" stroke-width="1.5"/>
+      <line x1="0" y1="8" x2="5" y2="8" stroke="#14b8a6" stroke-width="1.5"/>
+      <line x1="0" y1="16" x2="5" y2="16" stroke="#14b8a6" stroke-width="1.5"/>
+      <line x1="31" y1="12" x2="36" y2="12" stroke="#14b8a6" stroke-width="1.5"/>
+    </svg>NOR
+  </div>
+  <div class="comp-btn" draggable="true" data-type="XOR">
+    <svg width="36" height="24" viewBox="0 0 36 24">
+      <path d="M6 4 Q11 4 16 4 Q28 4 28 12 Q28 20 16 20 Q11 20 6 20 Q11 12 6 4 Z" fill="none" stroke="#f97316" stroke-width="1.5"/>
+      <path d="M3 4 Q8 12 3 20" fill="none" stroke="#f97316" stroke-width="1.5"/>
+      <line x1="0" y1="8" x2="6" y2="8" stroke="#f97316" stroke-width="1.5"/>
+      <line x1="0" y1="16" x2="6" y2="16" stroke="#f97316" stroke-width="1.5"/>
+      <line x1="28" y1="12" x2="36" y2="12" stroke="#f97316" stroke-width="1.5"/>
+    </svg>XOR
+  </div>
+  <div class="comp-btn" draggable="true" data-type="LED">
+    <svg width="28" height="20" viewBox="0 0 28 20">
+      <circle cx="14" cy="10" r="7" fill="#e74c3c" opacity="0.4" stroke="#e74c3c" stroke-width="1.5"/>
+      <circle cx="14" cy="10" r="3" fill="#e74c3c"/>
+    </svg>LED
+  </div>
+  <div class="sep"></div>
+  <button class="action-btn danger" onclick="clearAll()">Clear</button>
+  <button class="action-btn" onclick="deleteSelected()">Del Selected</button>
+  <button class="action-btn success" onclick="loadExample('halfadder')">Half Adder</button>
+  <button class="action-btn success" onclick="loadExample('and3')">3-input AND</button>
+  <div style="margin-left:auto;font-size:11px;color:var(--text-secondary);">
+    Drag gates · Wire ports · Click gate body to inspect · Drag background to pan · Keys A–H toggle switches
+  </div>
+  <div class="sep"></div>
+  <button id="theme-toggle" onclick="toggleTheme()" title="Toggle Light/Dark mode">
+    <div class="toggle-track"><div class="toggle-thumb"></div></div>
+    <span id="theme-label">Dark</span>
+  </button>
+</div>
+
+<div id="main">
+  <div id="canvas-wrap">
+    <svg id="wire-layer"></svg>
+    <div id="canvas"></div>
+
+    <!-- ═══ ZOOM BAR ═══ -->
+    <div id="zoom-bar">
+      <button class="zoom-btn" onclick="zoomStep(+0.15)" title="Zoom in">+</button>
+      <div id="zoom-track">
+        <div id="zoom-fill"></div>
+        <div id="zoom-thumb"></div>
+      </div>
+      <button class="zoom-btn" onclick="zoomStep(-0.15)" title="Zoom out">−</button>
+      <div id="zoom-reset" onclick="zoomReset()" title="Reset zoom">100%</div>
+    </div>
+    <!-- ═══ END ZOOM BAR ═══ -->
+    <div id="status">Drag components from toolbar · Click output then input port to wire · Click gate body to inspect · Drag background to pan</div>
+    <div id="watermark">made by eng.Abdullrahman</div>
+    <div id="del-hint">Press Delete to remove selected</div>
+
+    <!-- ═══ WIRE COLOR BAR ═══ -->
+    <div id="wire-color-bar">
+      <span>Wire color:</span>
+      <div class="wc-btn wc-blue"   title="Blue"   onclick="setWireColor('blue')"></div>
+      <div class="wc-btn wc-red"    title="Red"    onclick="setWireColor('red')"></div>
+      <div class="wc-btn wc-yellow" title="Yellow" onclick="setWireColor('yellow')"></div>
+      <div class="wc-btn wc-clear"  title="Default (signal color)" onclick="setWireColor(null)">auto</div>
+      <div class="sep" style="height:20px;"></div>
+      <button id="wire-del-btn" onclick="deleteSelectedWire()">🗑 Delete Wire</button>
+    </div>
+    <!-- ═══ END WIRE COLOR BAR ═══ -->
+
+    <!-- ═══ BOOLEAN ALGEBRA PANEL ═══ -->
+    <div id="bool-panel">
+      <div id="bool-panel-header" id="bool-drag-handle">
+        <span>⚙ Boolean Algebra</span>
+        <button class="bool-collapse-btn" onclick="toggleBoolPanel()" id="bool-collapse-icon" title="Collapse">▾</button>
+      </div>
+      <div id="bool-panel-body">
+        <!-- Live Expression -->
+        <div id="bool-expr-section">
+          <div class="bool-section-label">Circuit Expression (live)</div>
+          <div id="bool-expr-display" class="empty">Build a circuit to see its Boolean expression…</div>
+        </div>
+
+        <div class="bool-divider"></div>
+
+        <!-- Generator -->
+        <div id="bool-gen-section">
+          <div class="bool-section-label">Generate Circuit from Expression</div>
+          <div class="gen-syntax">
+            Syntax: <code>&amp;</code> = AND &nbsp; <code>|</code> = OR &nbsp; <code>!</code> = NOT &nbsp; <code>^</code> = XOR &nbsp; Use <code>()</code> for grouping.<br>
+            Example: <code>!A &amp; (B | C)</code>
+          </div>
+          <input type="text" id="bool-gen-input" placeholder="e.g.  A & B | !C" />
+          <button id="bool-gen-btn" onclick="generateCircuit()">⚡ Generate Circuit</button>
+          <div id="bool-gen-error"></div>
+        </div>
+      </div>
+    </div>
+    <!-- ═══ END BOOLEAN PANEL ═══ -->
+
+    <!-- ═══ GATE INSPECT MODAL ═══ -->
+    <div id="modal-overlay">
+      <div id="gate-modal">
+        <div id="modal-header">
+          <span id="modal-title">Gate Properties</span>
+          <button id="modal-close" onclick="closeModal()">✕</button>
+        </div>
+        <div id="modal-body">
+          <div class="modal-section">
+            <div class="modal-section-title">Gate Info</div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+              <span id="modal-badge" class="gate-badge"></span>
+              <span id="modal-expr" style="font-family:monospace;font-size:14px;color:#a0c4ff;"></span>
+            </div>
+            <div id="modal-desc" class="gate-desc"></div>
+          </div>
+          <div class="modal-section" id="input-count-section">
+            <div class="modal-section-title">Number of Inputs</div>
+            <div class="input-count-row">
+              <button class="count-btn" id="btn-less" onclick="changeInputCount(-1)">−</button>
+              <span class="count-display" id="count-display">2</span>
+              <button class="count-btn" id="btn-more" onclick="changeInputCount(+1)">+</button>
+              <span class="count-label">inputs (max 6)</span>
+            </div>
+            <div style="margin-top:8px;">
+              <button class="apply-btn" onclick="applyInputCount()">Apply & Redraw Gate</button>
+            </div>
+          </div>
+          <div class="modal-section">
+            <div class="modal-section-title">Truth Table</div>
+            <div id="truth-table-wrap"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- ═══ END MODAL ═══ -->
+
+    <!-- ═══ LED TRUTH TABLE MODAL ═══ -->
+    <div id="led-modal-overlay">
+      <div id="led-modal">
+        <div id="led-modal-header">
+          <div>
+            <div id="led-modal-title">Y — Truth Table</div>
+            <div id="led-modal-subtitle"></div>
+          </div>
+          <button id="led-modal-close" onclick="closeLedModal()">✕</button>
+        </div>
+        <div id="led-modal-body">
+          <div class="led-tt-expr" id="led-tt-expr"></div>
+          <div id="led-tt-wrap"></div>
+        </div>
+      </div>
+    </div>
+    <!-- ═══ END LED MODAL ═══ -->
+
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════════════ */
+const canvas    = document.getElementById('canvas');
+const wireLayer = document.getElementById('wire-layer');
+const statusEl  = document.getElementById('status');
+
+let components  = {};
+let wires       = [];
+let nextId      = 1;
+let dragging    = null;
+let dragOffset  = { x: 0, y: 0 };
+let wiringFrom  = null;
+let selectedId  = null;
+let tempWire    = null;
+let mousePos    = { x: 0, y: 0 };
+let modalCompId = null;
+let pendingInputCount = 2;
+let currentLedModalId = null;
+
+// Track drag distance to distinguish click vs drag
+let dragMoved = false;
+let dragStartPos = { x: 0, y: 0 };
+
+let panOffset   = { x: 0, y: 0 };
+let isPanning   = false;
+let panStart    = { x: 0, y: 0 };
+let panOrigin   = { x: 0, y: 0 };
+let zoomLevel   = 1.0;
+const ZOOM_MIN  = 0.25;
+const ZOOM_MAX  = 2.5;
+
+function applyPan() {
+  canvas.style.transform = `translate(${panOffset.x}px,${panOffset.y}px) scale(${zoomLevel})`;
+  canvas.style.transformOrigin = '0 0';
+  const cw = document.getElementById('canvas-wrap');
+  cw.style.backgroundSize = `${24 * zoomLevel}px ${24 * zoomLevel}px`;
+  cw.style.backgroundPosition = `${panOffset.x % (24 * zoomLevel)}px ${panOffset.y % (24 * zoomLevel)}px`;
+  redrawWires();
+  updateZoomBar();
+}
+
+function updateZoomBar() {
+  const pct = (zoomLevel - ZOOM_MIN) / (ZOOM_MAX - ZOOM_MIN);
+  const trackH = document.getElementById('zoom-track').clientHeight || 120;
+  const thumbH = 16;
+  const maxBottom = trackH - thumbH;
+  const bottomPx = Math.round(pct * maxBottom);
+  document.getElementById('zoom-thumb').style.bottom = bottomPx + 'px';
+  document.getElementById('zoom-fill').style.height  = (bottomPx + thumbH / 2) + 'px';
+  document.getElementById('zoom-reset').textContent  = Math.round(zoomLevel * 100) + '%';
+}
+
+function zoomStep(delta) {
+  const cw   = document.getElementById('canvas-wrap');
+  const cx   = cw.clientWidth  / 2;
+  const cy   = cw.clientHeight / 2;
+  zoomAroundPoint(zoomLevel + delta, cx, cy);
+}
+
+function zoomReset() {
+  const cw = document.getElementById('canvas-wrap');
+  zoomAroundPoint(1.0, cw.clientWidth / 2, cw.clientHeight / 2);
+}
+
+// Zoom keeping a canvas-wrap point (px,py) fixed on screen
+function zoomAroundPoint(newZoom, px, py) {
+  newZoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, newZoom));
+  // World point under (px,py) before zoom
+  const wx = (px - panOffset.x) / zoomLevel;
+  const wy = (py - panOffset.y) / zoomLevel;
+  // New pan so same world point stays under (px,py)
+  panOffset.x = px - wx * newZoom;
+  panOffset.y = py - wy * newZoom;
+  zoomLevel = newZoom;
+  applyPan();
+}
+
+
+// Wire selection & coloring
+let selectedWireIdx = null;          // index into wires[] of selected wire
+const WIRE_PALETTE = ['blue','red','yellow'];  // user color choices
+// per-wire user color (index → color key)
+const wireColors = {};               // wireKey(i) → 'blue'|'red'|'yellow'|null
+
+function wireKey(w) { return `${w.fromId}:${w.fromPort}→${w.toId}:${w.toPort}`; }
+
+const WIRE_BASE = {
+  blue:   { off: '#2a4a8a', on: '#4a9eff', glow: '#4a9eff' },
+  red:    { off: '#8a2a2a', on: '#ff5555', glow: '#ff5555' },
+  yellow: { off: '#7a6a00', on: '#ffe033', glow: '#ffe033' },
+};
+const WIRE_DEFAULT = { off: '#3a4a5a', on: '#2ecc71', glow: '#2ecc71' };
+
+// Switch naming: A, B, C … up to H
+const SWITCH_LABELS = ['A','B','C','D','E','F','G','H'];
+let switchLabelIndex = 0; // next label to assign
+
+/* ═══════════════════════════════════════════════════════════
+   CONSTANTS
+═══════════════════════════════════════════════════════════ */
+const GATE_COLORS = {
+  AND:'#4a9eff', OR:'#a855f7', NOT:'#f59e0b',
+  NAND:'#ec4899', NOR:'#14b8a6', XOR:'#f97316',
+  INPUT:'#27ae60', LED:'#e74c3c'
+};
+const GATE_DESCS = {
+  AND: 'Output is HIGH only when ALL inputs are HIGH.',
+  OR:  'Output is HIGH when at least ONE input is HIGH.',
+  NOT: 'Inverts the single input. Also called an inverter.',
+  NAND:'NOT-AND — output is LOW only when ALL inputs are HIGH. Universal gate.',
+  NOR: 'NOT-OR — output is LOW when any input is HIGH. Universal gate.',
+  XOR: 'Exclusive OR — output is HIGH when inputs DIFFER (2-input only).'
+};
+
+/* ═══════════════════════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════════════════════ */
+function setStatus(msg) { statusEl.textContent = msg; }
+
+function getPortPos(compId, portId) {
+  const el = document.getElementById(`port-${compId}-${portId}`);
+  if (!el) return null;
+  const r  = el.getBoundingClientRect();
+  const cr = document.getElementById('canvas-wrap').getBoundingClientRect();
+  return { x: r.left - cr.left + r.width/2, y: r.top - cr.top + r.height/2 };
+}
+
+function nextSwitchLabel() {
+  // Always find the lowest unused letter
+  const used = new Set(
+    Object.values(components)
+      .filter(c => c.type === 'INPUT')
+      .map(c => c.label)
+  );
+  for (const l of SWITCH_LABELS) {
+    if (!used.has(l)) return l;
+  }
+  return '?';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   EVALUATE
+═══════════════════════════════════════════════════════════ */
+function evaluate(compId, visited = new Set()) {
+  if (visited.has(compId)) return 0;
+  visited.add(compId);
+  const comp = components[compId];
+  if (!comp) return 0;
+  if (comp.type === 'INPUT') return comp.value || 0;
+  if (comp.type === 'LED') {
+    const w = wires.find(w => w.toId === compId && w.toPort === 'in');
+    return w ? evaluate(w.fromId, new Set(visited)) : 0;
+  }
+  const numIn = comp.numInputs || (comp.type === 'NOT' ? 1 : 2);
+  const vals = [];
+  for (let i = 1; i <= numIn; i++) {
+    const w = wires.find(w => w.toId === compId && w.toPort === `in${i}`);
+    vals.push(w ? evaluate(w.fromId, new Set(visited)) : 0);
+  }
+  switch (comp.type) {
+    case 'AND':  return vals.reduce((a,b) => a & b, 1);
+    case 'OR':   return vals.reduce((a,b) => a | b, 0);
+    case 'NOT':  return vals[0] ^ 1;
+    case 'NAND': return vals.reduce((a,b) => a & b, 1) ^ 1;
+    case 'NOR':  return vals.reduce((a,b) => a | b, 0) ^ 1;
+    case 'XOR':  return vals.reduce((a,b) => a ^ b, 0);
+    default: return 0;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SIMULATE
+═══════════════════════════════════════════════════════════ */
+function simulateAll() {
+  Object.keys(components).forEach(id => {
+    const comp = components[id];
+    comp.outputVal = evaluate(id);
+    const el = document.getElementById(`comp-${id}`);
+    if (!el) return;
+    if (comp.type === 'LED') {
+      el.classList.toggle('led-on',  comp.outputVal === 1);
+      el.classList.toggle('led-off', comp.outputVal === 0);
+    }
+    if (comp.type === 'INPUT') {
+      el.classList.toggle('switch-on',  comp.value === 1);
+      el.classList.toggle('switch-off', comp.value === 0);
+      const valEl = el.querySelector('.switch-val');
+      if (valEl) valEl.textContent = comp.value ? '= 1' : '= 0';
+    }
+  });
+  redrawWires();
+  updateBoolExpr();
+  if (modalCompId) refreshTruthTable(modalCompId);
+  // Refresh LED modal if open — so the active row tracks live switch state
+  const ledOverlay = document.getElementById('led-modal-overlay');
+  if (ledOverlay && ledOverlay.classList.contains('open') && currentLedModalId) {
+    openLedModal(currentLedModalId);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   WIRE DRAWING
+═══════════════════════════════════════════════════════════ */
+function redrawWires() {
+  wireLayer.innerHTML = '';
+
+  wires.forEach((w, i) => {
+    const from = getPortPos(w.fromId, 'out');
+    const to   = getPortPos(w.toId, w.toPort);
+    if (!from || !to) return;
+
+    const fc      = components[w.fromId];
+    const val     = fc ? (fc.outputVal || 0) : 0;
+    const isSelW  = selectedWireIdx === i;
+    const key     = wireKey(w);
+    const userCol = wireColors[key] || null;
+    const palette = userCol ? WIRE_BASE[userCol] : WIRE_DEFAULT;
+    const drawColor = isSelW ? '#ffffff' : (val ? palette.on : palette.off);
+    const strokeW   = isSelW ? 4 : (val ? 2.5 : 1.8);
+
+    const dx = Math.abs(to.x - from.x) * 0.5;
+    const dStr = `M${from.x},${from.y} C${from.x+dx},${from.y} ${to.x-dx},${to.y} ${to.x},${to.y}`;
+
+    // Glow for selected or colored wires
+    if (isSelW || userCol) {
+      const glow = document.createElementNS('http://www.w3.org/2000/svg','path');
+      glow.setAttribute('d', dStr);
+      glow.setAttribute('fill','none');
+      glow.setAttribute('stroke', isSelW ? '#ffffff' : palette.glow);
+      glow.setAttribute('stroke-width', strokeW + 6);
+      glow.setAttribute('stroke-linecap','round');
+      glow.setAttribute('opacity', isSelW ? '0.3' : '0.2');
+      wireLayer.appendChild(glow);
+    }
+
+    // Main wire — purely visual, no pointer events
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d', dStr);
+    path.setAttribute('fill','none');
+    path.setAttribute('stroke', drawColor);
+    path.setAttribute('stroke-width', strokeW);
+    path.setAttribute('stroke-linecap','round');
+    wireLayer.appendChild(path);
+
+    // Endpoint dots
+    [[from.x,from.y],[to.x,to.y]].forEach(([cx,cy]) => {
+      const dot = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      dot.setAttribute('cx',cx); dot.setAttribute('cy',cy);
+      dot.setAttribute('r', isSelW ? 5 : 3);
+      dot.setAttribute('fill', drawColor);
+      wireLayer.appendChild(dot);
+    });
+  });
+
+  // Temp wire while wiring
+  if (tempWire && wiringFrom) {
+    const from = getPortPos(wiringFrom.id, 'out');
+    if (from) {
+      const dx = Math.abs(mousePos.x - from.x) * 0.4;
+      const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+      path.setAttribute('d', `M${from.x},${from.y} C${from.x+dx},${from.y} ${mousePos.x-dx},${mousePos.y} ${mousePos.x},${mousePos.y}`);
+      path.setAttribute('fill','none');
+      path.setAttribute('stroke','#4a9eff');
+      path.setAttribute('stroke-width','1.5');
+      path.setAttribute('stroke-dasharray','6,3');
+      path.setAttribute('opacity','0.7');
+      wireLayer.appendChild(path);
+    }
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   BUILD GATE DOM
+═══════════════════════════════════════════════════════════ */
+function buildGateDOM(id) {
+  const comp  = components[id];
+  const { type } = comp;
+  const numIn = comp.numInputs || (type === 'NOT' ? 1 : 2);
+  const color = GATE_COLORS[type] || '#4a9eff';
+  const el    = document.getElementById(`comp-${id}`);
+  if (!el) return;
+  el.innerHTML = '';
+
+  if (type === 'INPUT') {
+    const label = comp.label || '?';
+    el.className = 'component switch-comp switch-off';
+    el.innerHTML = `
+      <div class="comp-body" onclick="toggleSwitch('${id}')">
+        <div class="switch-name">${label}</div>
+        <div class="switch-val">= 0</div>
+        <div class="switch-key">press ${label}</div>
+      </div>
+      <div class="port output" id="port-${id}-out" style="top:50%;transform:translateY(-50%);"></div>`;
+    el.querySelector('.port.output').addEventListener('mousedown', e => startWire(e, id, 'out'));
+
+  } else if (type === 'LED') {
+    el.className = 'component led-comp led-off';
+    const ledName = comp.label || 'Y';
+    el.innerHTML = `
+      <div class="port input" id="port-${id}-in" style="top:50%;transform:translateY(-50%);"></div>
+      <div class="comp-body" onclick="openLedModal('${id}')">
+        <div class="led-name">${ledName}</div>
+        <div class="led-circle"></div>
+        <div class="led-label">OUTPUT</div>
+        <div class="led-click-hint">click for truth table</div>
+      </div>`;
+    el.querySelector('.port.input').addEventListener('mousedown', e => connectToInput(e, id, 'in'));
+
+  } else {
+    el.className = 'component';
+    const bodyH = Math.max(54, numIn * 22 + 16);
+    let html = '';
+    for (let i = 1; i <= numIn; i++) {
+      const topPct = (i / (numIn + 1)) * 100;
+      html += `<div class="port input" id="port-${id}-in${i}" style="top:${topPct}%;transform:translateY(-50%);"></div>`;
+    }
+    const expr = buildExpr(type, numIn);
+    html += `
+      <div class="comp-body" style="min-height:${bodyH}px; cursor:pointer;">
+        <div class="comp-label" style="color:${color}">${type}</div>
+        <div class="comp-expr">${expr}</div>
+        ${numIn > 2 ? `<div class="comp-inputs-badge">${numIn} inputs</div>` : ''}
+      </div>
+      <div class="port output" id="port-${id}-out" style="top:50%;transform:translateY(-50%);"></div>`;
+    el.innerHTML = html;
+    for (let i = 1; i <= numIn; i++) {
+      const pEl = document.getElementById(`port-${id}-in${i}`);
+      if (pEl) { const pn = `in${i}`; pEl.addEventListener('mousedown', ev => connectToInput(ev, id, pn)); }
+    }
+    el.querySelector('.port.output').addEventListener('mousedown', e => startWire(e, id, 'out'));
+    const body = el.querySelector('.comp-body');
+    if (body) body.addEventListener('click', e => { if (!dragging) { e.stopPropagation(); openModal(id); } });
+  }
+
+  el.addEventListener('mousedown', e => {
+    if (e.target.classList.contains('port')) return;
+    selectComponent(id);
+    startDrag(e, id);
+  });
+}
+
+function buildExpr(type, n) {
+  if (type === 'NOT') return 'Ā';
+  if (type === 'XOR') return 'A ⊕ B';
+  const labels = ['A','B','C','D','E','F'].slice(0, n);
+  const op = { AND:'·', OR:'+', NAND:'·', NOR:'+' }[type] || '·';
+  let expr = labels.join(` ${op} `);
+  if (type === 'NAND' || type === 'NOR') expr = `¬(${expr})`;
+  return expr;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CREATE COMPONENT
+═══════════════════════════════════════════════════════════ */
+function createComponent(type, x, y, numInputs, label) {
+  const id  = 'c' + (nextId++);
+  const nIn = numInputs || (type === 'NOT' ? 1 : 2);
+  const lbl = (type === 'INPUT') ? (label || nextSwitchLabel()) : undefined;
+  const comp = { id, type, x, y, value: 0, outputVal: 0, numInputs: nIn, label: lbl };
+  components[id] = comp;
+  const el = document.createElement('div');
+  el.id = `comp-${id}`;
+  el.className = 'component';
+  el.style.left = x + 'px';
+  el.style.top  = y + 'px';
+  canvas.appendChild(el);
+  buildGateDOM(id);
+  simulateAll();
+  return id;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SELECT / DRAG
+═══════════════════════════════════════════════════════════ */
+function selectComponent(id) {
+  if (selectedId) { const p = document.getElementById(`comp-${selectedId}`); if (p) p.classList.remove('selected'); }
+  selectedId = id;
+  if (id) { const el = document.getElementById(`comp-${id}`); if (el) el.classList.add('selected'); document.getElementById('del-hint').style.display = 'block'; }
+  else document.getElementById('del-hint').style.display = 'none';
+}
+
+function toggleSwitch(id) {
+  if (dragMoved) return;  // was a drag, not a click
+  const comp = components[id];
+  if (!comp) return;
+  comp.value ^= 1;
+  simulateAll();
+}
+
+function startWire(e, id, port) {
+  e.stopPropagation();
+  wiringFrom = { id, port }; tempWire = true;
+  setStatus('Click an INPUT port to complete the wire. Escape to cancel.');
+}
+
+function connectToInput(e, toId, toPort) {
+  e.stopPropagation();
+  if (!wiringFrom) { setStatus('First click an OUTPUT port (right side), then an input port.'); return; }
+  if (wiringFrom.id === toId) { setStatus('Cannot connect gate to itself!'); wiringFrom = null; tempWire = null; redrawWires(); return; }
+  wires = wires.filter(w => !(w.toId === toId && w.toPort === toPort));
+  wires.push({ fromId: wiringFrom.id, fromPort: 'out', toId, toPort });
+  wiringFrom = null; tempWire = null;
+  simulateAll();
+  setStatus('Wire connected! Click a wire to delete it.');
+}
+
+function startDrag(e, id) {
+  e.preventDefault();
+  deselectWire();
+  const el = document.getElementById(`comp-${id}`);
+  const rect = el.getBoundingClientRect();
+  // dragOffset in screen pixels (before zoom correction)
+  dragOffset.x = e.clientX - rect.left;
+  dragOffset.y = e.clientY - rect.top;
+  dragging = id;
+  dragMoved = false;
+  dragStartPos.x = e.clientX;
+  dragStartPos.y = e.clientY;
+}
+
+document.getElementById('canvas-wrap').addEventListener('mousemove', e => {
+  const rect = document.getElementById('canvas-wrap').getBoundingClientRect();
+  mousePos.x = e.clientX - rect.left;
+  mousePos.y = e.clientY - rect.top;
+
+  // Handle panning
+  if (isPanning) {
+    panOffset.x = panOrigin.x + (e.clientX - panStart.x);
+    panOffset.y = panOrigin.y + (e.clientY - panStart.y);
+    applyPan();
+    return;
+  }
+
+  if (dragging) {
+    if (!dragMoved && (Math.abs(e.clientX - dragStartPos.x) > 5 || Math.abs(e.clientY - dragStartPos.y) > 5)) {
+      dragMoved = true;
+    }
+    const comp = components[dragging];
+    const el   = document.getElementById(`comp-${dragging}`);
+    // mousePos is in canvas-wrap px; convert to canvas world coords
+    comp.x = Math.max(0, (mousePos.x - panOffset.x) / zoomLevel - dragOffset.x / zoomLevel);
+    comp.y = Math.max(0, (mousePos.y - panOffset.y) / zoomLevel - dragOffset.y / zoomLevel);
+    el.style.left = comp.x + 'px';
+    el.style.top  = comp.y + 'px';
+    redrawWires();
+  }
+  if (tempWire) redrawWires();
+  // Change cursor to pointer when hovering over a wire
+  if (!dragging && !wiringFrom && !e.target.classList?.contains?.('port')) {
+    const hovered = findWireAtPoint(mousePos.x, mousePos.y, 12);
+    document.getElementById('canvas-wrap').style.cursor = hovered >= 0 ? 'pointer' : '';
+  }
+});
+
+document.getElementById('canvas-wrap').addEventListener('mouseup', () => {
+  dragging = null;
+  if (isPanning) {
+    isPanning = false;
+    document.getElementById('canvas-wrap').style.cursor = '';
+  }
+});
+document.addEventListener('mouseup', () => {
+  if (isPanning) {
+    isPanning = false;
+    document.getElementById('canvas-wrap').style.cursor = '';
+  }
+  dragging = null;
+});
+document.getElementById('canvas-wrap').addEventListener('mousedown', e => {
+  // Only pan on background (not components, ports, or panel elements)
+  const cw = document.getElementById('canvas-wrap');
+  const isBackground = e.target === cw || e.target === canvas || e.target === wireLayer;
+  if (isBackground && !wiringFrom) {
+    // Check if clicking a wire — if so, let click handler handle it
+    const rect = cw.getBoundingClientRect();
+    const cx = e.clientX - rect.left;
+    const cy = e.clientY - rect.top;
+    if (findWireAtPoint(cx, cy, 12) >= 0) return;
+
+    isPanning = true;
+    panStart.x = e.clientX;
+    panStart.y = e.clientY;
+    panOrigin.x = panOffset.x;
+    panOrigin.y = panOffset.y;
+    cw.style.cursor = 'grabbing';
+    e.preventDefault();
+  }
+});
+document.getElementById('canvas-wrap').addEventListener('wheel', e => {
+  e.preventDefault();
+  const rect = document.getElementById('canvas-wrap').getBoundingClientRect();
+  const px = e.clientX - rect.left;
+  const py = e.clientY - rect.top;
+  const delta = e.deltaY < 0 ? 0.1 : -0.1;
+  zoomAroundPoint(zoomLevel + delta, px, py);
+}, { passive: false });
+
+document.getElementById('canvas-wrap').addEventListener('click', e => {
+  const cw = document.getElementById('canvas-wrap');
+  const rect = cw.getBoundingClientRect();
+  const cx = e.clientX - rect.left;
+  const cy = e.clientY - rect.top;
+
+  // If clicking a port or component body, skip wire detection
+  if (e.target.classList?.contains?.('port') || e.target.closest?.('.comp-body')) return;
+
+  // Try to pick a wire first (within 12px)
+  if (!wiringFrom) {
+    const wireIdx = findWireAtPoint(cx, cy, 12);
+    if (wireIdx >= 0) {
+      selectComponent(null);
+      selectWire(wireIdx);
+      return;
+    }
+  }
+
+  // Clicked empty space
+  const isBackground = e.target === cw || e.target === canvas || e.target === wireLayer;
+  if (isBackground) {
+    selectComponent(null);
+    deselectWire();
+    if (wiringFrom) { wiringFrom = null; tempWire = null; redrawWires(); setStatus('Wiring cancelled.'); }
+  }
+});
+
+/* ── KEYBOARD SHORTCUTS ── */
+document.addEventListener('keydown', e => {
+  // Ignore when typing in inputs
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+  if (e.key === 'Escape') {
+    wiringFrom = null; tempWire = null; redrawWires();
+    closeModal();
+    closeLedModal();
+    deselectWire();
+    setStatus('Cancelled.');
+    return;
+  }
+  if ((e.key === 'Delete' || e.key === 'Backspace') && !modalCompId) {
+    if (selectedWireIdx !== null) { e.preventDefault(); deleteSelectedWire(); return; }
+    if (selectedId) { e.preventDefault(); deleteSelected(); return; }
+  }
+  // A–H toggle switches
+  const key = e.key.toUpperCase();
+  if (SWITCH_LABELS.includes(key)) {
+    const match = Object.values(components).find(c => c.type === 'INPUT' && c.label === key);
+    if (match) { match.value ^= 1; simulateAll(); setStatus(`Switch ${key} → ${match.value}`); }
+  }
+});
+
+/* ── WIRE PICKING (math-based, no SVG pointer events needed) ── */
+
+// Sample points along a cubic bezier curve
+function bezierPoint(p0, p1, p2, p3, t) {
+  const mt = 1 - t;
+  return {
+    x: mt*mt*mt*p0.x + 3*mt*mt*t*p1.x + 3*mt*t*t*p2.x + t*t*t*p3.x,
+    y: mt*mt*mt*p0.y + 3*mt*mt*t*p1.y + 3*mt*t*t*p2.y + t*t*t*p3.y
+  };
+}
+
+// Minimum distance from point (px,py) to a wire's bezier curve
+function distToWire(w, px, py) {
+  const from = getPortPos(w.fromId, 'out');
+  const to   = getPortPos(w.toId, w.toPort);
+  if (!from || !to) return Infinity;
+  const dx = Math.abs(to.x - from.x) * 0.5;
+  const p0 = from;
+  const p1 = { x: from.x + dx, y: from.y };
+  const p2 = { x: to.x - dx,   y: to.y };
+  const p3 = to;
+  let minDist = Infinity;
+  const STEPS = 30;
+  for (let k = 0; k <= STEPS; k++) {
+    const t = k / STEPS;
+    const pt = bezierPoint(p0, p1, p2, p3, t);
+    const d = Math.hypot(pt.x - px, pt.y - py);
+    if (d < minDist) minDist = d;
+  }
+  return minDist;
+}
+
+// Find the closest wire to a canvas point, within threshold pixels
+function findWireAtPoint(px, py, threshold = 12) {
+  let bestIdx = -1;
+  let bestDist = threshold;
+  wires.forEach((w, i) => {
+    const d = distToWire(w, px, py);
+    if (d < bestDist) { bestDist = d; bestIdx = i; }
+  });
+  return bestIdx;
+}
+
+/* ── WIRE SELECTION & COLOR ── */
+function selectWire(idx) {
+  // Deselect any component
+  selectComponent(null);
+  selectedWireIdx = idx;
+  // Update color bar active state
+  const bar = document.getElementById('wire-color-bar');
+  bar.classList.add('visible');
+  const w = wires[idx];
+  const currentColor = w ? wireColors[wireKey(w)] : null;
+  document.querySelectorAll('.wc-btn').forEach(b => b.classList.remove('wc-active'));
+  if (currentColor) {
+    const btn = document.querySelector(`.wc-btn.wc-${currentColor}`);
+    if (btn) btn.classList.add('wc-active');
+  } else {
+    document.querySelector('.wc-btn.wc-clear')?.classList.add('wc-active');
+  }
+  redrawWires();
+  setStatus('Wire selected — choose a color or click 🗑 to delete. Click canvas to deselect.');
+}
+
+function deselectWire() {
+  selectedWireIdx = null;
+  document.getElementById('wire-color-bar').classList.remove('visible');
+  document.querySelectorAll('.wc-btn').forEach(b => b.classList.remove('wc-active'));
+  redrawWires();
+}
+
+function setWireColor(color) {
+  if (selectedWireIdx === null || selectedWireIdx >= wires.length) return;
+  const w   = wires[selectedWireIdx];
+  const key = wireKey(w);
+  if (color === null) {
+    delete wireColors[key];
+  } else {
+    wireColors[key] = color;
+  }
+  // Update active button
+  document.querySelectorAll('.wc-btn').forEach(b => b.classList.remove('wc-active'));
+  if (color) {
+    document.querySelector(`.wc-btn.wc-${color}`)?.classList.add('wc-active');
+  } else {
+    document.querySelector('.wc-btn.wc-clear')?.classList.add('wc-active');
+  }
+  redrawWires();
+  setStatus(`Wire color set to ${color || 'auto (signal)'}.`);
+}
+
+function deleteSelectedWire() {
+  if (selectedWireIdx === null) return;
+  const w = wires[selectedWireIdx];
+  if (w) delete wireColors[wireKey(w)];
+  wires.splice(selectedWireIdx, 1);
+  selectedWireIdx = null;
+  document.getElementById('wire-color-bar').classList.remove('visible');
+  simulateAll();
+  setStatus('Wire deleted.');
+}
+
+function deleteSelected() {
+  if (selectedWireIdx !== null) { deleteSelectedWire(); return; }
+  if (!selectedId) return;
+  // Clean up wireColors for wires being removed
+  wires.filter(w => w.fromId === selectedId || w.toId === selectedId)
+       .forEach(w => delete wireColors[wireKey(w)]);
+  wires = wires.filter(w => w.fromId !== selectedId && w.toId !== selectedId);
+  const el = document.getElementById(`comp-${selectedId}`);
+  if (el) el.remove();
+  delete components[selectedId];
+  selectedId = null;
+  document.getElementById('del-hint').style.display = 'none';
+  simulateAll();
+  setStatus('Component deleted.');
+}
+
+function clearAll() {
+  closeModal();
+  closeLedModal();
+  canvas.innerHTML = ''; wireLayer.innerHTML = '';
+  components = {}; wires = []; nextId = 1;
+  selectedId = null; wiringFrom = null; tempWire = null;
+  selectedWireIdx = null;
+  Object.keys(wireColors).forEach(k => delete wireColors[k]);
+  document.getElementById('wire-color-bar').classList.remove('visible');
+  document.getElementById('del-hint').style.display = 'none';
+  // Reset pan + zoom
+  panOffset.x = 0; panOffset.y = 0;
+  zoomLevel = 1.0;
+  applyPan();
+  updateBoolExpr();
+  setStatus('Canvas cleared.');
+}
+
+/* ── TOOLBAR DRAG ── */
+document.querySelectorAll('.comp-btn[draggable]').forEach(btn => {
+  btn.addEventListener('dragstart', e => e.dataTransfer.setData('type', btn.dataset.type));
+});
+document.getElementById('canvas-wrap').addEventListener('dragover', e => e.preventDefault());
+document.getElementById('canvas-wrap').addEventListener('drop', e => {
+  e.preventDefault();
+  const type = e.dataTransfer.getData('type');
+  if (!type) return;
+  const rect = document.getElementById('canvas-wrap').getBoundingClientRect();
+  // Convert drop pos from screen → canvas world coords
+  const cx = Math.max(10, (e.clientX - rect.left - panOffset.x) / zoomLevel - 50);
+  const cy = Math.max(10, (e.clientY - rect.top  - panOffset.y) / zoomLevel - 30);
+  createComponent(type, cx, cy);
+  setStatus(`${type} added.`);
+});
+
+/* ═══════════════════════════════════════════════════════════
+   BOOLEAN PANEL — LIVE EXPRESSION
+═══════════════════════════════════════════════════════════ */
+let boolPanelCollapsed = false;
+function toggleBoolPanel() {
+  boolPanelCollapsed = !boolPanelCollapsed;
+  document.getElementById('bool-panel').classList.toggle('collapsed', boolPanelCollapsed);
+  document.getElementById('bool-collapse-icon').textContent = boolPanelCollapsed ? '▸' : '▾';
+}
+
+/* Derive a readable Boolean expression for the whole circuit by
+   tracing backwards from every LED output */
+function deriveBoolExpr(compId, visited = new Set(), depth = 0) {
+  if (visited.has(compId) || depth > 20) return '…';
+  visited.add(compId);
+  const comp = components[compId];
+  if (!comp) return '?';
+  if (comp.type === 'INPUT') return comp.label || '?';
+
+  const numIn = comp.numInputs || (comp.type === 'NOT' ? 1 : 2);
+  const getArg = (port) => {
+    const w = wires.find(w => w.toId === compId && w.toPort === port);
+    if (!w) return '_';
+    return deriveBoolExpr(w.fromId, new Set(visited), depth + 1);
+  };
+
+  const args = [];
+  for (let i = 1; i <= numIn; i++) args.push(getArg(`in${i}`));
+
+  const needsBracket = (s) => s.includes(' ') && !s.startsWith('(') && !s.startsWith('!');
+  const wrap = (s) => needsBracket(s) ? `(${s})` : s;
+
+  switch (comp.type) {
+    case 'NOT':  return `!${wrap(args[0])}`;
+    case 'AND':  return args.map(wrap).join(' & ');
+    case 'OR':   return args.map(wrap).join(' | ');
+    case 'NAND': return `!(${args.map(wrap).join(' & ')})`;
+    case 'NOR':  return `!(${args.map(wrap).join(' | ')})`;
+    case 'XOR':  return args.map(wrap).join(' ^ ');
+    default: return '?';
+  }
+}
+
+function updateBoolExpr() {
+  const display = document.getElementById('bool-expr-display');
+  // Find all LEDs (outputs)
+  const leds = Object.values(components).filter(c => c.type === 'LED');
+
+  if (leds.length === 0) {
+    // Try to find gates with no outgoing wire (final outputs)
+    const gateIds = new Set(Object.keys(components).filter(id => !['INPUT','LED'].includes(components[id].type)));
+    const hasOutgoing = new Set(wires.map(w => w.fromId));
+    const terminals = [...gateIds].filter(id => !hasOutgoing.has(id));
+    if (terminals.length === 0) {
+      display.textContent = 'Build a circuit to see its Boolean expression…';
+      display.className = 'empty';
+      return;
+    }
+    const exprs = terminals.map(id => deriveBoolExpr(id));
+    display.textContent = 'Y = ' + exprs.join('  ,  Y = ');
+    display.className = '';
+    return;
+  }
+
+  const lines = [];
+  leds.forEach((led, i) => {
+    // Assign auto label: Y if single, Y1/Y2/… if multiple
+    const newLabel = leds.length === 1 ? 'Y' : `Y${i + 1}`;
+
+    // Update label on component data if changed
+    if (led.label !== newLabel) {
+      led.label = newLabel;
+      // Rebuild DOM to show new name immediately
+      const el = document.getElementById(`comp-${led.id}`);
+      if (el) {
+        const nameEl = el.querySelector('.led-name');
+        if (nameEl) nameEl.textContent = newLabel;
+      }
+    }
+
+    const w = wires.find(w => w.toId === led.id && w.toPort === 'in');
+    if (!w) {
+      lines.push(`${newLabel} = _`);
+    } else {
+      const expr = deriveBoolExpr(w.fromId);
+      lines.push(`${newLabel} = ${expr}`);
+    }
+  });
+
+  display.textContent = lines.join('\n');
+  display.className = '';
+}
+
+/* ── Draggable bool panel ── */
+(function() {
+  const panel  = document.getElementById('bool-panel');
+  const handle = document.getElementById('bool-panel-header');
+  let pd = null;
+  handle.addEventListener('mousedown', e => {
+    if (e.target.classList.contains('bool-collapse-btn')) return;
+    const pr = panel.getBoundingClientRect();
+    const wr = document.getElementById('canvas-wrap').getBoundingClientRect();
+    pd = { ox: e.clientX - pr.left, oy: e.clientY - pr.top, wr };
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove', e => {
+    if (!pd) return;
+    const x = e.clientX - pd.ox - pd.wr.left;
+    const y = e.clientY - pd.oy - pd.wr.top;
+    panel.style.left   = Math.max(0, x) + 'px';
+    panel.style.top    = Math.max(0, y) + 'px';
+    panel.style.bottom = 'auto';
+  });
+  document.addEventListener('mouseup', () => { pd = null; });
+})();
+
+/* ═══════════════════════════════════════════════════════════
+   BOOLEAN EXPRESSION PARSER + CIRCUIT GENERATOR
+═══════════════════════════════════════════════════════════ */
+
+/* --- Tokenizer --- */
+function tokenize(expr) {
+  const tokens = [];
+  let i = 0;
+  while (i < expr.length) {
+    if (/\s/.test(expr[i])) { i++; continue; }
+    if (/[A-H]/i.test(expr[i])) { tokens.push({ t:'VAR', v: expr[i].toUpperCase() }); i++; }
+    else if (expr[i] === '&' || expr[i] === '*') { tokens.push({ t:'AND' }); i++; }
+    else if (expr[i] === '|' || expr[i] === '+') { tokens.push({ t:'OR'  }); i++; }
+    else if (expr[i] === '!' || expr[i] === '~') { tokens.push({ t:'NOT' }); i++; }
+    else if (expr[i] === '^')                     { tokens.push({ t:'XOR' }); i++; }
+    else if (expr[i] === '(')                     { tokens.push({ t:'LP'  }); i++; }
+    else if (expr[i] === ')')                     { tokens.push({ t:'RP'  }); i++; }
+    else throw new Error(`Unknown character: "${expr[i]}"`);
+  }
+  return tokens;
+}
+
+/* --- Parser (recursive descent, returns AST) ---
+   Grammar:
+     expr   → or
+     or     → xor  ( '|' xor  )*
+     xor    → and  ( '^' and  )*
+     and    → not  ( '&' not  )*
+     not    → '!' not | atom
+     atom   → VAR | '(' expr ')'
+*/
+class Parser {
+  constructor(tokens) { this.tokens = tokens; this.pos = 0; }
+  peek()    { return this.tokens[this.pos]; }
+  consume() { return this.tokens[this.pos++]; }
+  expect(t) { const tk = this.consume(); if (tk?.t !== t) throw new Error(`Expected ${t}`); return tk; }
+
+  parse()   { const n = this.expr(); if (this.pos < this.tokens.length) throw new Error('Unexpected token'); return n; }
+  expr()    { return this.or(); }
+  or()      { let l = this.xor(); while (this.peek()?.t === 'OR')  { this.consume(); l = { op:'OR',  l, r: this.xor() }; } return l; }
+  xor()     { let l = this.and(); while (this.peek()?.t === 'XOR') { this.consume(); l = { op:'XOR', l, r: this.and() }; } return l; }
+  and()     { let l = this.not(); while (this.peek()?.t === 'AND') { this.consume(); l = { op:'AND', l, r: this.not() }; } return l; }
+  not()     { if (this.peek()?.t === 'NOT') { this.consume(); return { op:'NOT', child: this.not() }; } return this.atom(); }
+  atom()    {
+    const t = this.peek();
+    if (t?.t === 'VAR') { this.consume(); return { op:'VAR', name: t.v }; }
+    if (t?.t === 'LP')  { this.consume(); const n = this.expr(); this.expect('RP'); return n; }
+    throw new Error('Expected variable or "("');
+  }
+}
+
+/* --- AST → circuit placement --- */
+function generateCircuit() {
+  const raw = document.getElementById('bool-gen-input').value.trim();
+  const errEl = document.getElementById('bool-gen-error');
+  errEl.textContent = '';
+  if (!raw) { errEl.textContent = 'Please enter a Boolean expression.'; return; }
+
+  let ast;
+  try {
+    const tokens = tokenize(raw);
+    const parser = new Parser(tokens);
+    ast = parser.parse();
+  } catch(e) {
+    errEl.textContent = '⚠ Parse error: ' + e.message;
+    return;
+  }
+
+  clearAll();
+
+  // Layout: place nodes in columns (right to left = deeper in tree)
+  // First pass: compute depth and collect variables
+  const varNames = new Set();
+  function collectVars(node) {
+    if (!node) return;
+    if (node.op === 'VAR') { varNames.add(node.name); return; }
+    if (node.op === 'NOT') { collectVars(node.child); return; }
+    collectVars(node.l); collectVars(node.r);
+  }
+  collectVars(ast);
+
+  const VARS = [...varNames].sort();
+  const COL_W = 160;
+  const ROW_H = 80;
+  const START_X = 60;
+
+  // Map variable name → switch component id
+  const varSwitchMap = {};
+  VARS.forEach((v, i) => {
+    const yPos = (i + 1) * ROW_H;
+    const sid  = createComponent('INPUT', START_X, yPos, 1, v);
+    varSwitchMap[v] = sid;
+  });
+
+  // Recursively build circuit, return { id } of output component
+  // colHints tracks next Y slot per column to avoid overlap
+  const colY = {};
+  function getColY(col) {
+    if (!colY[col]) colY[col] = 40;
+    const y = colY[col];
+    colY[col] += ROW_H;
+    return y;
+  }
+
+  function buildNode(node, col) {
+    if (node.op === 'VAR') {
+      return varSwitchMap[node.name];
+    }
+    if (node.op === 'NOT') {
+      const childId = buildNode(node.child, col - 1);
+      const y = getColY(col);
+      const x = START_X + col * COL_W;
+      const gateId = createComponent('NOT', x, y, 1);
+      setTimeout(() => {
+        wires.push({ fromId: childId, fromPort: 'out', toId: gateId, toPort: 'in1' });
+      }, 0);
+      return gateId;
+    }
+    // Binary ops (AND, OR, XOR)
+    const lId = buildNode(node.l, col - 1);
+    const rId = buildNode(node.r, col - 1);
+    const y   = getColY(col);
+    const x   = START_X + col * COL_W;
+    const gateId = createComponent(node.op, x, y, 2);
+    setTimeout(() => {
+      wires.push({ fromId: lId, fromPort: 'out', toId: gateId, toPort: 'in1' });
+      wires.push({ fromId: rId, fromPort: 'out', toId: gateId, toPort: 'in2' });
+    }, 0);
+    return gateId;
+  }
+
+  // Compute tree height for column offset
+  function treeHeight(node) {
+    if (!node || node.op === 'VAR') return 0;
+    if (node.op === 'NOT') return 1 + treeHeight(node.child);
+    return 1 + Math.max(treeHeight(node.l), treeHeight(node.r));
+  }
+  const height = treeHeight(ast);
+  const outputGateId = buildNode(ast, height);
+
+  // Add LED at output
+  setTimeout(() => {
+    const ledX = START_X + (height + 1) * COL_W;
+    const ledY  = 60;
+    const ledId = createComponent('LED', ledX, ledY);
+    wires.push({ fromId: outputGateId, fromPort: 'out', toId: ledId, toPort: 'in' });
+    simulateAll();
+    setStatus(`Circuit generated for: ${raw}  — Press variable keys to toggle inputs!`);
+  }, 50);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   GATE INSPECT MODAL
+═══════════════════════════════════════════════════════════ */
+function openModal(id) {
+  const comp = components[id];
+  if (!comp || ['INPUT','LED'].includes(comp.type)) return;
+  modalCompId = id;
+  pendingInputCount = comp.numInputs || 2;
+  const color = GATE_COLORS[comp.type] || '#4a9eff';
+  document.getElementById('modal-title').textContent = comp.type + ' Gate';
+  document.getElementById('modal-title').style.color = color;
+  const badge = document.getElementById('modal-badge');
+  badge.textContent = comp.type; badge.style.color = color; badge.style.borderColor = color; badge.style.background = color+'22';
+  document.getElementById('modal-expr').textContent = buildExpr(comp.type, pendingInputCount);
+  document.getElementById('modal-desc').textContent = GATE_DESCS[comp.type] || '';
+  const section = document.getElementById('input-count-section');
+  section.style.display = (comp.type==='NOT'||comp.type==='XOR') ? 'none' : 'block';
+  document.getElementById('count-display').textContent = pendingInputCount;
+  updateCountBtns();
+  refreshTruthTable(id);
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  modalCompId = null;
+}
+document.getElementById('modal-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+});
+function changeInputCount(d) {
+  pendingInputCount = Math.max(2, Math.min(6, pendingInputCount + d));
+  document.getElementById('count-display').textContent = pendingInputCount;
+  updateCountBtns();
+  document.getElementById('modal-expr').textContent = buildExpr(components[modalCompId]?.type, pendingInputCount);
+  refreshTruthTable(modalCompId, pendingInputCount);
+}
+function updateCountBtns() {
+  document.getElementById('btn-less').disabled = pendingInputCount <= 2;
+  document.getElementById('btn-more').disabled = pendingInputCount >= 6;
+}
+function applyInputCount() {
+  if (!modalCompId) return;
+  const comp = components[modalCompId];
+  if (!comp) return;
+  const old = comp.numInputs || 2;
+  if (pendingInputCount < old) {
+    for (let i = pendingInputCount+1; i <= old; i++)
+      wires = wires.filter(w => !(w.toId===modalCompId && w.toPort===`in${i}`));
+  }
+  comp.numInputs = pendingInputCount;
+  buildGateDOM(modalCompId);
+  simulateAll();
+  setStatus(`Gate updated to ${pendingInputCount} inputs.`);
+}
+
+/* ── Truth table ── */
+function refreshTruthTable(id, overrideN) {
+  const comp = components[id]; if (!comp) return;
+  const type = comp.type;
+  const numIn = overrideN || comp.numInputs || (type==='NOT'?1:2);
+  const rows  = Math.pow(2, numIn);
+  const labels = ['A','B','C','D','E','F'].slice(0, numIn);
+  const liveVals = [];
+  for (let i=1; i<=numIn; i++) {
+    const w = wires.find(w => w.toId===id && w.toPort===`in${i}`);
+    liveVals.push(w ? (components[w.fromId]?.outputVal||0) : 0);
+  }
+  let html = '<table class="tt-table"><thead><tr>';
+  labels.forEach(l => { html += `<th>${l}</th>`; });
+  html += '<th>Y</th></tr></thead><tbody>';
+  for (let r=0; r<rows; r++) {
+    const bits = [];
+    for (let b=numIn-1; b>=0; b--) bits.push((r>>b)&1);
+    const out = computeGate(type, bits);
+    const active = bits.every((b,i) => b===liveVals[i]);
+    html += `<tr${active?' class="tt-active"':''}>`;
+    bits.forEach(b => { html += `<td class="tt-val-${b}">${b}</td>`; });
+    html += `<td class="tt-val-${out}">${out}</td></tr>`;
+  }
+  html += '</tbody></table>';
+  document.getElementById('truth-table-wrap').innerHTML = html;
+}
+function computeGate(type, bits) {
+  switch(type) {
+    case 'AND':  return bits.reduce((a,b) => a&b, 1);
+    case 'OR':   return bits.reduce((a,b) => a|b, 0);
+    case 'NOT':  return bits[0]^1;
+    case 'NAND': return bits.reduce((a,b) => a&b, 1)^1;
+    case 'NOR':  return bits.reduce((a,b) => a|b, 0)^1;
+    case 'XOR':  return bits.reduce((a,b) => a^b, 0);
+    default: return 0;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LED TRUTH TABLE MODAL
+═══════════════════════════════════════════════════════════ */
+
+// Collect all INPUT switches reachable upstream from a given component
+function collectUpstreamSwitches(compId, visited = new Set()) {
+  if (visited.has(compId)) return [];
+  visited.add(compId);
+  const comp = components[compId];
+  if (!comp) return [];
+  if (comp.type === 'INPUT') return [comp];
+
+  const result = [];
+  // collect all wires going INTO this component
+  const inWires = wires.filter(w => w.toId === compId);
+  inWires.forEach(w => {
+    result.push(...collectUpstreamSwitches(w.fromId, visited));
+  });
+  return result;
+}
+
+// Evaluate circuit with forced switch values (map: switchId → 0|1)
+function evaluateWithForced(compId, forcedMap, visited = new Set()) {
+  if (visited.has(compId)) return 0;
+  visited.add(compId);
+  const comp = components[compId];
+  if (!comp) return 0;
+  if (comp.type === 'INPUT') return forcedMap.hasOwnProperty(comp.id) ? forcedMap[comp.id] : (comp.value || 0);
+  if (comp.type === 'LED') {
+    const w = wires.find(w => w.toId === compId && w.toPort === 'in');
+    return w ? evaluateWithForced(w.fromId, forcedMap, new Set(visited)) : 0;
+  }
+  const numIn = comp.numInputs || (comp.type === 'NOT' ? 1 : 2);
+  const vals = [];
+  for (let i = 1; i <= numIn; i++) {
+    const w = wires.find(w => w.toId === compId && w.toPort === `in${i}`);
+    vals.push(w ? evaluateWithForced(w.fromId, forcedMap, new Set(visited)) : 0);
+  }
+  switch (comp.type) {
+    case 'AND':  return vals.reduce((a,b) => a & b, 1);
+    case 'OR':   return vals.reduce((a,b) => a | b, 0);
+    case 'NOT':  return vals[0] ^ 1;
+    case 'NAND': return vals.reduce((a,b) => a & b, 1) ^ 1;
+    case 'NOR':  return vals.reduce((a,b) => a | b, 0) ^ 1;
+    case 'XOR':  return vals.reduce((a,b) => a ^ b, 0);
+    default: return 0;
+  }
+}
+
+function openLedModal(ledId) {
+  currentLedModalId = ledId;
+  const comp = components[ledId];
+  if (!comp || comp.type !== 'LED') return;
+
+  // Check if connected
+  const inWire = wires.find(w => w.toId === ledId && w.toPort === 'in');
+
+  const ledName = comp.label || 'Y';
+  document.getElementById('led-modal-title').textContent = `${ledName} — Truth Table`;
+
+  if (!inWire) {
+    document.getElementById('led-modal-subtitle').textContent = 'Not connected to any circuit';
+    document.getElementById('led-tt-expr').textContent = `${ledName} = _ (no input connected)`;
+    document.getElementById('led-tt-wrap').innerHTML =
+      '<p style="color:#665;font-size:12px;text-align:center;padding:20px;">Connect this LED to a circuit first.</p>';
+    document.getElementById('led-modal-overlay').classList.add('open');
+    return;
+  }
+
+  // Derive Boolean expression
+  const expr = deriveBoolExpr(inWire.fromId);
+  document.getElementById('led-tt-expr').textContent = `${ledName} = ${expr}`;
+
+  // Collect unique upstream switches, sorted by label
+  const switches = collectUpstreamSwitches(ledId);
+  const uniqueSwitches = [];
+  const seenIds = new Set();
+  switches.forEach(sw => { if (!seenIds.has(sw.id)) { seenIds.add(sw.id); uniqueSwitches.push(sw); } });
+  uniqueSwitches.sort((a, b) => (a.label || '').localeCompare(b.label || ''));
+
+  const n = uniqueSwitches.length;
+  document.getElementById('led-modal-subtitle').textContent =
+    `${n} input${n !== 1 ? 's' : ''} · ${Math.pow(2, n)} rows`;
+
+  if (n === 0) {
+    document.getElementById('led-tt-wrap').innerHTML =
+      '<p style="color:#665;font-size:12px;text-align:center;padding:20px;">No input switches found upstream.</p>';
+    document.getElementById('led-modal-overlay').classList.add('open');
+    return;
+  }
+
+  // Get current live values for row highlight
+  const liveVals = uniqueSwitches.map(sw => sw.value || 0);
+
+  // Build truth table
+  const rows = Math.pow(2, n);
+  let html = '<table class="led-tt-table"><thead><tr>';
+  uniqueSwitches.forEach(sw => { html += `<th>${sw.label || '?'}</th>`; });
+  html += `<th class="out-col">${ledName}</th></tr></thead><tbody>`;
+
+  for (let r = 0; r < rows; r++) {
+    const bits = [];
+    for (let b = n - 1; b >= 0; b--) bits.push((r >> b) & 1);
+
+    // Build forced map
+    const forcedMap = {};
+    uniqueSwitches.forEach((sw, i) => { forcedMap[sw.id] = bits[i]; });
+
+    const out = evaluateWithForced(inWire.fromId, forcedMap);
+    const isActive = bits.every((b, i) => b === liveVals[i]);
+
+    html += `<tr${isActive ? ' class="tt-active-row"' : ''}>`;
+    bits.forEach(b => { html += `<td class="${b ? 'lv1' : 'lv0'}">${b}</td>`; });
+    html += `<td class="${out ? 'lv1' : 'lv0'}" style="font-size:15px;">${out}</td></tr>`;
+  }
+  html += '</tbody></table>';
+  document.getElementById('led-tt-wrap').innerHTML = html;
+  document.getElementById('led-modal-overlay').classList.add('open');
+}
+
+function closeLedModal() {
+  document.getElementById('led-modal-overlay').classList.remove('open');
+  currentLedModalId = null;
+}
+
+document.getElementById('led-modal-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('led-modal-overlay')) closeLedModal();
+});
+
+/* ═══════════════════════════════════════════════════════════
+   EXAMPLES
+═══════════════════════════════════════════════════════════ */
+function loadExample(name) {
+  clearAll();
+  if (name === 'halfadder') {
+    const sw1  = createComponent('INPUT', 60, 130);
+    const sw2  = createComponent('INPUT', 60, 260);
+    const xor1 = createComponent('XOR',  240, 155);
+    const and1 = createComponent('AND',  240, 265);
+    const led1 = createComponent('LED',  430, 165);
+    const led2 = createComponent('LED',  430, 275);
+    setTimeout(() => {
+      wires.push({ fromId:sw1, fromPort:'out', toId:xor1, toPort:'in1' });
+      wires.push({ fromId:sw2, fromPort:'out', toId:xor1, toPort:'in2' });
+      wires.push({ fromId:sw1, fromPort:'out', toId:and1, toPort:'in1' });
+      wires.push({ fromId:sw2, fromPort:'out', toId:and1, toPort:'in2' });
+      wires.push({ fromId:xor1, fromPort:'out', toId:led1, toPort:'in' });
+      wires.push({ fromId:and1, fromPort:'out', toId:led2, toPort:'in' });
+      simulateAll();
+      setStatus('Half Adder — press A or B to toggle switches!');
+    }, 100);
+  } else if (name === 'and3') {
+    const sw1  = createComponent('INPUT', 60, 100);
+    const sw2  = createComponent('INPUT', 60, 220);
+    const sw3  = createComponent('INPUT', 60, 340);
+    const and1 = createComponent('AND',  260, 205, 3);
+    const led1 = createComponent('LED',  430, 215);
+    setTimeout(() => {
+      wires.push({ fromId:sw1, fromPort:'out', toId:and1, toPort:'in1' });
+      wires.push({ fromId:sw2, fromPort:'out', toId:and1, toPort:'in2' });
+      wires.push({ fromId:sw3, fromPort:'out', toId:and1, toPort:'in3' });
+      wires.push({ fromId:and1, fromPort:'out', toId:led1, toPort:'in' });
+      simulateAll();
+      setStatus('3-input AND — press A, B, or C to toggle switches!');
+    }, 100);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   THEME TOGGLE
+═══════════════════════════════════════════════════════════ */
+function toggleTheme() {
+  const isLight = document.body.classList.toggle('light');
+  document.getElementById('theme-label').textContent = isLight ? 'Light' : 'Dark';
+  // Persist preference
+  try { localStorage.setItem('lgw_theme', isLight ? 'light' : 'dark'); } catch(e) {}
+}
+// Restore saved preference on load
+(function() {
+  try {
+    const saved = localStorage.getItem('lgw_theme');
+    if (saved === 'light') {
+      document.body.classList.add('light');
+      // label will be set after DOM ready
+      document.addEventListener('DOMContentLoaded', () => {
+        const lbl = document.getElementById('theme-label');
+        if (lbl) lbl.textContent = 'Light';
+      });
+    }
+  } catch(e) {}
+})();
+
+/* ══════════════════════════════════════════════════
+   TOUCH SUPPORT — full mobile interaction
+══════════════════════════════════════════════════ */
+
+// Returns {clientX, clientY} from mouse or touch event
+function getEventXY(e) {
+  if (e.touches && e.touches.length > 0) return { clientX: e.touches[0].clientX, clientY: e.touches[0].clientY };
+  if (e.changedTouches && e.changedTouches.length > 0) return { clientX: e.changedTouches[0].clientX, clientY: e.changedTouches[0].clientY };
+  return { clientX: e.clientX, clientY: e.clientY };
+}
+
+// ── Touch: toolbar button tap → place component at center of canvas ──
+document.querySelectorAll('.comp-btn[draggable]').forEach(btn => {
+  btn.addEventListener('touchend', e => {
+    e.preventDefault();
+    const type = btn.dataset.type;
+    if (!type) return;
+    const cw   = document.getElementById('canvas-wrap');
+    const rect = cw.getBoundingClientRect();
+    // Drop near center of visible canvas, staggered a bit
+    const cx = Math.max(10, (rect.width  / 2) - 50 - panOffset.x + (Math.random() * 60 - 30));
+    const cy = Math.max(10, (rect.height / 2) - 30 - panOffset.y + (Math.random() * 60 - 30));
+    createComponent(type, cx, cy);
+    setStatus(`${type} added — drag it to position`);
+  });
+});
+
+// ── Touch: component drag ──
+function bindTouchDrag(el, id) {
+  el.addEventListener('touchstart', e => {
+    if (e.target.classList.contains('port')) return;
+    e.stopPropagation();
+    const { clientX, clientY } = getEventXY(e);
+    selectComponent(id);
+    deselectWire();
+    const rect = el.getBoundingClientRect();
+    dragOffset.x = clientX - rect.left;
+    dragOffset.y = clientY - rect.top;
+    dragging = id;
+    dragMoved = false;
+    dragStartPos.x = clientX;
+    dragStartPos.y = clientY;
+  }, { passive: false });
+}
+
+// ── Touch: port wiring ──
+function bindTouchPort(portEl, id, portName, isOutput) {
+  portEl.addEventListener('touchend', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isOutput) {
+      startWire(e, id, portName);
+    } else {
+      connectToInput(e, id, portName);
+    }
+  }, { passive: false });
+}
+
+// ── Patch buildGateDOM to also attach touch events ──
+const _origBuildGateDOM = buildGateDOM;
+// We re-attach after the original runs via MutationObserver approach — instead,
+// patch the relevant port/drag attachment inline by overriding after each call.
+// Simpler: add a wrapper that runs after each createComponent.
+const _origCreateComponent = createComponent;
+
+// Override to attach touch listeners after DOM is built
+window.createComponent = function(type, x, y, numInputs, label) {
+  const id = _origCreateComponent(type, x, y, numInputs, label);
+  attachTouchListeners(id);
+  return id;
+};
+
+function attachTouchListeners(id) {
+  const el   = document.getElementById(`comp-${id}`);
+  const comp = components[id];
+  if (!el || !comp) return;
+
+  // Component drag via touch
+  bindTouchDrag(el, id);
+
+  // Port touch wiring
+  if (comp.type === 'INPUT') {
+    const outP = document.getElementById(`port-${id}-out`);
+    if (outP) bindTouchPort(outP, id, 'out', true);
+  } else if (comp.type === 'LED') {
+    const inP = document.getElementById(`port-${id}-in`);
+    if (inP) bindTouchPort(inP, id, 'in', false);
+  } else {
+    const numIn = comp.numInputs || (comp.type === 'NOT' ? 1 : 2);
+    for (let i = 1; i <= numIn; i++) {
+      const pEl = document.getElementById(`port-${id}-in${i}`);
+      if (pEl) bindTouchPort(pEl, id, `in${i}`, false);
+    }
+    const outP = document.getElementById(`port-${id}-out`);
+    if (outP) bindTouchPort(outP, id, 'out', true);
+  }
+}
+
+// ── Touch: canvas-wrap touch move (drag component or pan) ──
+document.getElementById('canvas-wrap').addEventListener('touchstart', e => {
+  const cw = document.getElementById('canvas-wrap');
+  const isBackground = e.target === cw || e.target === canvas || e.target === wireLayer;
+  if (isBackground && !wiringFrom && e.touches.length === 1) {
+    const { clientX, clientY } = getEventXY(e);
+    const rect = cw.getBoundingClientRect();
+    const cx = clientX - rect.left;
+    const cy = clientY - rect.top;
+    if (findWireAtPoint(cx, cy, 18) >= 0) return;
+    isPanning = true;
+    panStart.x  = clientX; panStart.y  = clientY;
+    panOrigin.x = panOffset.x; panOrigin.y = panOffset.y;
+    e.preventDefault();
+  }
+}, { passive: false });
+
+document.getElementById('canvas-wrap').addEventListener('touchmove', e => {
+  e.preventDefault();
+  const { clientX, clientY } = getEventXY(e);
+  const rect = document.getElementById('canvas-wrap').getBoundingClientRect();
+  mousePos.x = clientX - rect.left;
+  mousePos.y = clientY - rect.top;
+
+  if (isPanning) {
+    panOffset.x = panOrigin.x + (clientX - panStart.x);
+    panOffset.y = panOrigin.y + (clientY - panStart.y);
+    applyPan();
+    return;
+  }
+
+  if (dragging) {
+    if (!dragMoved && (Math.abs(clientX - dragStartPos.x) > 5 || Math.abs(clientY - dragStartPos.y) > 5)) {
+      dragMoved = true;
+    }
+    const comp = components[dragging];
+    const el   = document.getElementById(`comp-${dragging}`);
+    comp.x = Math.max(0, (mousePos.x - panOffset.x) / zoomLevel - dragOffset.x / zoomLevel);
+    comp.y = Math.max(0, (mousePos.y - panOffset.y) / zoomLevel - dragOffset.y / zoomLevel);
+    el.style.left = comp.x + 'px';
+    el.style.top  = comp.y + 'px';
+    redrawWires();
+  }
+  if (tempWire) redrawWires();
+}, { passive: false });
+
+document.getElementById('canvas-wrap').addEventListener('touchend', e => {
+  const { clientX, clientY } = getEventXY(e);
+  const rect = document.getElementById('canvas-wrap').getBoundingClientRect();
+  const cx = clientX - rect.left;
+  const cy = clientY - rect.top;
+
+  if (isPanning) {
+    isPanning = false;
+    // If barely moved → treat as tap (wire select / deselect)
+    const dx = clientX - panStart.x;
+    const dy = clientY - panStart.y;
+    if (Math.abs(dx) < 6 && Math.abs(dy) < 6) {
+      if (!wiringFrom) {
+        const wireIdx = findWireAtPoint(cx, cy, 18);
+        if (wireIdx >= 0) { selectComponent(null); selectWire(wireIdx); return; }
+      }
+      selectComponent(null);
+      deselectWire();
+      if (wiringFrom) { wiringFrom = null; tempWire = null; redrawWires(); setStatus('Wiring cancelled.'); }
+    }
+    return;
+  }
+
+  dragging = null;
+}, { passive: false });
+
+// Attach touch listeners to examples loaded on startup (after DOM ready)
+document.addEventListener('DOMContentLoaded', () => {
+  Object.keys(components).forEach(id => attachTouchListeners(id));
+});
+// Also attach after loadExample fires (it uses setTimeout internally)
+const _origLoadExample = loadExample;
+window.loadExample = function(name) {
+  _origLoadExample(name);
+  setTimeout(() => Object.keys(components).forEach(id => attachTouchListeners(id)), 200);
+};
+
+// Collapse bool panel on mobile by default
+if (window.innerWidth <= 700) {
+  setTimeout(() => { if (!boolPanelCollapsed) toggleBoolPanel(); }, 50);
+}
+
+loadExample('halfadder');
+
+/* ── Zoom slider drag ── */
+(function() {
+  const track = document.getElementById('zoom-track');
+  let sliderDragging = false;
+
+  function applySliderY(clientY) {
+    const rect = track.getBoundingClientRect();
+    const thumbH = 16;
+    const maxBottom = rect.height - thumbH;
+    // y=0 at top → bottom of track = ZOOM_MIN, top = ZOOM_MAX
+    const relY = Math.max(0, Math.min(rect.height, clientY - rect.top));
+    const pct  = 1 - (relY / rect.height);
+    const newZoom = ZOOM_MIN + pct * (ZOOM_MAX - ZOOM_MIN);
+    const cw = document.getElementById('canvas-wrap');
+    zoomAroundPoint(newZoom, cw.clientWidth / 2, cw.clientHeight / 2);
+  }
+
+  track.addEventListener('mousedown', e => { sliderDragging = true; applySliderY(e.clientY); e.preventDefault(); });
+  document.addEventListener('mousemove', e => { if (sliderDragging) applySliderY(e.clientY); });
+  document.addEventListener('mouseup', () => { sliderDragging = false; });
+
+  track.addEventListener('touchstart', e => { sliderDragging = true; applySliderY(e.touches[0].clientY); e.preventDefault(); }, { passive: false });
+  document.addEventListener('touchmove', e => {
+    if (sliderDragging) { applySliderY(e.touches[0].clientY); e.preventDefault(); }
+  }, { passive: false });
+  document.addEventListener('touchend', () => { sliderDragging = false; });
+})();
+
+/* ── Pinch-to-zoom on canvas-wrap ── */
+(function() {
+  let lastDist  = null;
+  let pinchMidX = 0;
+  let pinchMidY = 0;
+
+  document.getElementById('canvas-wrap').addEventListener('touchstart', e => {
+    if (e.touches.length === 2) {
+      const t0 = e.touches[0], t1 = e.touches[1];
+      lastDist  = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+      const rect = document.getElementById('canvas-wrap').getBoundingClientRect();
+      pinchMidX = ((t0.clientX + t1.clientX) / 2) - rect.left;
+      pinchMidY = ((t0.clientY + t1.clientY) / 2) - rect.top;
+    }
+  }, { passive: false });
+
+  document.getElementById('canvas-wrap').addEventListener('touchmove', e => {
+    if (e.touches.length === 2 && lastDist !== null) {
+      e.preventDefault();
+      const t0 = e.touches[0], t1 = e.touches[1];
+      const dist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+      const scale = dist / lastDist;
+      lastDist = dist;
+      zoomAroundPoint(zoomLevel * scale, pinchMidX, pinchMidY);
+    }
+  }, { passive: false });
+
+  document.getElementById('canvas-wrap').addEventListener('touchend', e => {
+    if (e.touches.length < 2) lastDist = null;
+  });
+})();
+</script>
+</body>
+</html>
