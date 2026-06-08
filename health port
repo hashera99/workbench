@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>منظمة الرعاية الصحية</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --red:#C8102E;--red-dark:#a80d25;--red-light:rgba(200,16,46,0.08);
+  --white:#fff;--off:#fafafa;--border:#e8e8e8;
+  --text:#1a1a1a;--muted:#888;--light:#bbb;
+  --shadow:0 8px 32px rgba(0,0,0,0.08);
+}
+html,body{height:100%;font-family:'Cairo',sans-serif;background:#f5f5f5;color:var(--text);}
+
+.page{display:none;min-height:100vh;}
+.page.active{display:flex;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.5;}}
+.anim{animation:fadeUp 0.5s ease both;}
+.d1{animation-delay:.1s;}.d2{animation-delay:.2s;}.d3{animation-delay:.3s;}.d4{animation-delay:.4s;}
+
+/* ══ SHARED TOPBAR ══ */
+.topbar{background:#fff;border-bottom:0.5px solid var(--border);padding:0 2rem;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.topbar-left{display:flex;align-items:center;gap:12px;}
+.topbar-logo{display:flex;align-items:center;gap:8px;}
+.topbar-logo span{font-weight:700;font-size:1.05rem;}
+.topbar-right{display:flex;align-items:center;gap:14px;}
+.topbar-avatar{width:36px;height:36px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.85rem;font-weight:700;}
+.topbar-name{font-size:0.88rem;font-weight:600;}
+.plan-tag{font-size:0.73rem;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(200,16,46,0.1);color:var(--red);}
+.logout-btn{font-size:0.82rem;color:var(--muted);background:none;border:none;cursor:pointer;font-family:'Cairo',sans-serif;}
+.logout-btn:hover{color:var(--red);}
+.back-btn{display:flex;align-items:center;gap:6px;font-size:0.84rem;font-weight:600;color:var(--muted);background:none;border:1.5px solid var(--border);border-radius:8px;padding:5px 12px;cursor:pointer;font-family:'Cairo',sans-serif;transition:all 0.2s;}
+.back-btn:hover{border-color:var(--red);color:var(--red);}
+
+/* ══ SHARED CARD ══ */
+.card{background:#fff;border-radius:14px;padding:1.4rem;border:0.5px solid var(--border);}
+.card-title{font-size:0.95rem;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:8px;}
+
+/* ══ STATUS PILLS ══ */
+.status-pill{font-size:0.71rem;font-weight:600;padding:3px 10px;border-radius:20px;}
+.badge-ok{background:#e6f4ea;color:#1e7e34;}
+.badge-warn{background:#fff3e0;color:#e65100;}
+.badge-danger{background:#fce8e8;color:#b71c1c;}
+.badge-gray{background:#f0f0f0;color:#666;}
+
+/* ══ SHARED BUTTONS ══ */
+.main-btn{width:100%;padding:0.86rem;background:var(--red);color:#fff;border:none;border-radius:10px;font-size:1rem;font-weight:700;font-family:'Cairo',sans-serif;cursor:pointer;transition:background 0.2s,transform 0.1s,box-shadow 0.2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.main-btn:hover{background:var(--red-dark);box-shadow:0 6px 20px rgba(200,16,46,0.3);}
+.main-btn:active{transform:scale(0.98);}
+.outline-btn{background:#fff;color:var(--red);border:2px solid var(--red);border-radius:10px;padding:0.7rem 1.4rem;font-size:0.9rem;font-weight:700;font-family:'Cairo',sans-serif;cursor:pointer;transition:background 0.2s;}
+.outline-btn:hover{background:var(--red-light);}
+
+/* ══ SPINNER ══ */
+.spinner{width:22px;height:22px;border:2.5px solid rgba(200,16,46,0.2);border-top-color:var(--red);border-radius:50%;animation:spin 0.8s linear infinite;display:inline-block;}
+
+/* ══════════════════════════════════════════
+   PAGE 1 — LOGIN
+══════════════════════════════════════════ */
+#loginPage{flex-direction:row;}
+.lp-left{flex:1;background:var(--red);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 2rem;position:relative;overflow:hidden;}
+.lp-left::before{content:'';position:absolute;top:-100px;left:-100px;width:320px;height:320px;border-radius:50%;background:rgba(255,255,255,0.05);}
+.lp-left::after{content:'';position:absolute;bottom:-80px;right:-80px;width:240px;height:240px;border-radius:50%;background:rgba(255,255,255,0.06);}
+.logo-wrap{display:flex;flex-direction:column;align-items:center;gap:1rem;z-index:1;}
+.crescent{width:96px;height:96px;}
+.brand-name{color:#fff;font-size:1.6rem;font-weight:700;text-align:center;}
+.brand-sub{color:rgba(255,255,255,0.75);font-size:0.88rem;font-weight:300;text-align:center;margin-top:-0.4rem;}
+.bar{width:56px;height:2px;background:rgba(255,255,255,0.3);margin:1.5rem 0;z-index:1;}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:0.9rem;width:100%;max-width:268px;z-index:1;}
+.stat{background:rgba(255,255,255,0.1);border:0.5px solid rgba(255,255,255,0.18);border-radius:14px;padding:1rem 0.8rem;text-align:center;transition:background 0.2s;}
+.stat:hover{background:rgba(255,255,255,0.16);}
+.stat-ic{font-size:22px;display:block;margin-bottom:3px;}
+.stat-n{color:#fff;font-size:1.4rem;font-weight:700;display:block;}
+.stat-l{color:rgba(255,255,255,0.65);font-size:0.7rem;}
+.lp-right{flex:1.15;display:flex;align-items:center;justify-content:center;padding:3rem 2.5rem;background:#fff;}
+.lbox{width:100%;max-width:400px;}
+.login-tag{font-size:0.78rem;color:var(--red);font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:0.4rem;}
+.lbox h1{font-size:2rem;font-weight:700;margin-bottom:0.4rem;}
+.lbox .desc{font-size:0.87rem;color:var(--muted);line-height:1.65;margin-bottom:2rem;}
+.google-btn{width:100%;padding:0.8rem;border:1.5px solid var(--border);border-radius:10px;background:#fff;font-size:0.92rem;font-family:'Cairo',sans-serif;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:border-color 0.2s,box-shadow 0.2s;margin-bottom:1.4rem;}
+.google-btn:hover{border-color:#aaa;box-shadow:0 2px 10px rgba(0,0,0,0.08);}
+.google-logo{width:20px;height:20px;flex-shrink:0;}
+.or-div{display:flex;align-items:center;gap:10px;margin-bottom:1.2rem;}
+.or-line{flex:1;height:0.5px;background:var(--border);}
+.or-t{font-size:0.78rem;color:var(--light);white-space:nowrap;}
+.fg{margin-bottom:1.1rem;}
+.fl{display:block;font-size:0.82rem;font-weight:600;color:#333;margin-bottom:0.4rem;}
+.fw{position:relative;}
+.fic{position:absolute;right:13px;top:50%;transform:translateY(-50%);color:#aaa;pointer-events:none;display:flex;}
+.fi{width:100%;padding:0.73rem 2.5rem 0.73rem 1rem;border:1.5px solid var(--border);border-radius:10px;font-size:0.9rem;font-family:'Cairo',sans-serif;color:var(--text);background:var(--off);outline:none;transition:border-color 0.2s,background 0.2s,box-shadow 0.2s;direction:rtl;}
+.fi:focus{border-color:var(--red);background:#fff;box-shadow:0 0 0 3px rgba(200,16,46,0.08);}
+.fi::placeholder{color:var(--light);font-size:0.84rem;}
+.row-rem{display:flex;align-items:center;justify-content:space-between;margin:0.2rem 0 1.5rem;}
+.rlabel{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.82rem;color:#666;}
+.rlabel input{accent-color:var(--red);width:14px;height:14px;cursor:pointer;}
+.forgotl{font-size:0.82rem;color:var(--red);text-decoration:none;font-weight:500;}
+.forgotl:hover{text-decoration:underline;}
+/* Role grid — only 2 buttons now */
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.65rem;margin-top:1.2rem;}
+.role-btn{padding:0.7rem 0.5rem;border:1.5px solid var(--border);border-radius:10px;background:#fff;font-size:0.82rem;font-family:'Cairo',sans-serif;color:#555;cursor:pointer;transition:border-color 0.2s,color 0.2s,background 0.2s;display:flex;align-items:center;justify-content:center;gap:6px;font-weight:600;}
+.role-btn:hover{border-color:var(--red);color:var(--red);background:var(--red-light);}
+.fn{text-align:center;font-size:0.74rem;color:var(--light);margin-top:1.8rem;}
+.fn a{color:var(--red);text-decoration:none;font-weight:500;cursor:pointer;}
+
+/* ══════════════════════════════════════════
+   PAGE 2 — PLAN SELECTION
+══════════════════════════════════════════ */
+#planPage{flex-direction:column;align-items:center;justify-content:center;padding:2.5rem 1.5rem;background:#f5f5f5;}
+.plan-back{align-self:flex-start;margin-bottom:1.5rem;}
+.plan-header{text-align:center;margin-bottom:2.5rem;}
+.plan-header .user-avatar{width:56px;height:56px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.3rem;font-weight:700;margin:0 auto 0.8rem;}
+.plan-header h2{font-size:1.7rem;font-weight:700;}
+.plan-header p{color:var(--muted);font-size:0.9rem;margin-top:0.3rem;}
+.plans-wrap{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;width:100%;max-width:720px;}
+.plan-card{background:#fff;border-radius:18px;padding:2rem 1.8rem;border:2px solid var(--border);cursor:pointer;transition:border-color 0.25s,transform 0.2s,box-shadow 0.25s;position:relative;}
+.plan-card:not(.locked):hover{border-color:var(--red);transform:translateY(-4px);box-shadow:var(--shadow);}
+.plan-card.featured{border-color:var(--red);box-shadow:0 8px 28px rgba(200,16,46,0.15);}
+.plan-card.locked{opacity:0.65;cursor:not-allowed;}
+.plan-badge{position:absolute;top:-12px;right:24px;background:var(--red);color:#fff;font-size:0.72rem;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:0.5px;}
+.plan-badge.cs{background:#666;}
+.plan-icon{width:52px;height:52px;border-radius:14px;background:var(--red-light);display:flex;align-items:center;justify-content:center;margin-bottom:1.2rem;}
+.plan-title{font-size:1.2rem;font-weight:700;margin-bottom:0.4rem;}
+.plan-sub{font-size:0.83rem;color:var(--muted);line-height:1.6;margin-bottom:1.4rem;}
+.plan-feats{list-style:none;display:flex;flex-direction:column;gap:0.6rem;margin-bottom:1.6rem;}
+.plan-feats li{display:flex;align-items:center;gap:8px;font-size:0.84rem;color:#444;}
+.plan-feats li::before{content:'';display:block;width:16px;height:16px;border-radius:50%;background:var(--red-light);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23C8102E' stroke-width='3'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:center;flex-shrink:0;}
+.select-plan-btn{width:100%;padding:0.75rem;background:var(--red);color:#fff;border:none;border-radius:10px;font-size:0.92rem;font-weight:700;font-family:'Cairo',sans-serif;cursor:pointer;transition:background 0.2s;}
+.select-plan-btn:hover{background:var(--red-dark);}
+.select-plan-btn.cs-btn{background:#f0f0f0;color:#888;cursor:not-allowed;}
+.coming-soon-banner{display:flex;align-items:center;justify-content:center;gap:8px;background:#f5f5f5;border-radius:10px;padding:10px;font-size:0.82rem;color:#666;font-weight:600;margin-bottom:1rem;}
+
+/* ══════════════════════════════════════════
+   PAGE 3 — PERIODIC (Raqaba Dawriya)
+══════════════════════════════════════════ */
+#periodicPage{flex-direction:column;background:#f5f5f5;min-height:100vh;}
+.peri-body{padding:2rem;max-width:850px;margin:0 auto;width:100%;}
+.dash-title{font-size:1.4rem;font-weight:700;margin-bottom:0.3rem;}
+.dash-sub{font-size:0.86rem;color:var(--muted);margin-bottom:1.8rem;}
+.upload-card{background:#fff;border-radius:18px;padding:2rem;border:0.5px solid var(--border);margin-bottom:1.4rem;}
+.upload-card h3{font-size:1.1rem;font-weight:700;margin-bottom:0.4rem;}
+.upload-card p{font-size:0.85rem;color:var(--muted);margin-bottom:1.4rem;}
+.upload-zone{border:2px dashed var(--border);border-radius:14px;padding:2.5rem;text-align:center;cursor:pointer;transition:border-color 0.2s,background 0.2s;position:relative;}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--red);background:var(--red-light);}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.upload-icon{font-size:2.5rem;display:block;margin-bottom:0.6rem;}
+.upload-title{font-size:0.95rem;font-weight:600;margin-bottom:0.3rem;}
+.upload-sub{font-size:0.8rem;color:var(--muted);}
+.file-preview{display:none;align-items:center;gap:12px;padding:12px 14px;background:var(--off);border-radius:10px;border:0.5px solid var(--border);margin-top:0.8rem;}
+.file-preview.show{display:flex;}
+.file-preview-name{font-size:0.85rem;font-weight:600;flex:1;}
+.file-preview-size{font-size:0.78rem;color:var(--muted);}
+.file-remove{background:none;border:none;cursor:pointer;color:var(--muted);font-size:1.1rem;}
+.file-remove:hover{color:var(--red);}
+.analyze-btn{width:100%;padding:0.85rem;background:var(--red);color:#fff;border:none;border-radius:10px;font-size:0.95rem;font-weight:700;font-family:'Cairo',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background 0.2s;margin-top:1rem;}
+.analyze-btn:hover{background:var(--red-dark);}
+.analyze-btn:disabled{background:#ccc;cursor:not-allowed;}
+.ai-result{background:#fff;border-radius:14px;padding:1.5rem;border:0.5px solid var(--border);margin-top:1.2rem;display:none;}
+.ai-result.show{display:block;}
+.ai-header{display:flex;align-items:center;gap:10px;margin-bottom:1.2rem;}
+.ai-avatar{width:38px;height:38px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;}
+.ai-name{font-size:0.9rem;font-weight:700;}
+.ai-sub{font-size:0.75rem;color:var(--muted);}
+.ai-body{font-size:0.87rem;line-height:1.8;color:#333;}
+.ai-section{margin-bottom:1rem;}
+.ai-section-title{font-weight:700;color:var(--text);margin-bottom:0.4rem;font-size:0.88rem;}
+.ai-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:0.5px solid #f5f5f5;font-size:0.84rem;}
+.ai-row:last-child{border-bottom:none;}
+.ai-key{color:var(--muted);}
+.ai-val{font-weight:600;}
+.val-normal{color:#1e7e34;}.val-high{color:#b71c1c;}.val-low{color:#e65100;}
+.hist-card{background:#fff;border-radius:14px;padding:1.4rem;border:0.5px solid var(--border);}
+.hist-card h3{font-size:1rem;font-weight:700;margin-bottom:1rem;}
+.htable{width:100%;border-collapse:collapse;font-size:0.83rem;}
+.htable th{text-align:right;padding:8px 10px;color:var(--muted);font-weight:600;border-bottom:0.5px solid var(--border);}
+.htable td{padding:10px;border-bottom:0.5px solid #f0f0f0;}
+.view-btn{font-size:0.78rem;color:var(--red);background:none;border:none;cursor:pointer;font-family:'Cairo',sans-serif;font-weight:600;}
+
+/* ══════════════════════════════════════════
+   PAGE 4 — DOCTORS (Specialist Page)
+══════════════════════════════════════════ */
+#doctorsPage{flex-direction:column;background:#f5f5f5;min-height:100vh;}
+.doc-body{padding:2rem;max-width:1000px;margin:0 auto;width:100%;}
+.doctors-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;margin-bottom:2rem;}
+.doctor-card{background:#fff;border-radius:16px;padding:1.5rem;border:1.5px solid var(--border);cursor:pointer;transition:border-color 0.2s,transform 0.2s,box-shadow 0.2s;text-align:center;}
+.doctor-card:hover{border-color:var(--red);transform:translateY(-3px);box-shadow:var(--shadow);}
+.doctor-avatar{width:70px;height:70px;border-radius:50%;margin:0 auto 0.9rem;display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:700;color:#fff;}
+.doctor-name{font-size:1rem;font-weight:700;margin-bottom:0.2rem;}
+.doctor-spec{font-size:0.8rem;color:var(--muted);margin-bottom:0.6rem;}
+.doctor-stats{display:flex;justify-content:center;gap:1.2rem;font-size:0.78rem;color:#555;margin-bottom:0.8rem;}
+.doctor-stats span{display:flex;align-items:center;gap:4px;}
+.avail-dot{width:8px;height:8px;border-radius:50%;display:inline-block;}
+.avail-green{background:#1e7e34;}.avail-yellow{background:#e65100;}.avail-red{background:#b71c1c;}
+
+/* Doctor detail modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;align-items:center;justify-content:center;}
+.modal-overlay.show{display:flex;}
+.modal{background:#fff;border-radius:20px;padding:2rem;max-width:520px;width:90%;max-height:90vh;overflow-y:auto;position:relative;animation:fadeUp 0.3s ease;}
+.modal-close{position:absolute;top:1rem;left:1rem;background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--muted);line-height:1;}
+.modal-close:hover{color:var(--red);}
+.modal-header{display:flex;align-items:center;gap:1.2rem;margin-bottom:1.4rem;}
+.modal-avatar{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:700;color:#fff;flex-shrink:0;}
+.modal-name{font-size:1.2rem;font-weight:700;}
+.modal-spec{font-size:0.85rem;color:var(--muted);}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.7rem;margin-bottom:1.2rem;}
+.info-item{background:var(--off);border-radius:10px;padding:0.8rem 1rem;}
+.info-label{font-size:0.73rem;color:var(--muted);font-weight:600;margin-bottom:2px;}
+.info-value{font-size:0.9rem;font-weight:700;}
+.patients-mini{margin-top:0.5rem;}
+.patients-mini h4{font-size:0.9rem;font-weight:700;margin-bottom:0.8rem;}
+.ptable{width:100%;border-collapse:collapse;font-size:0.82rem;}
+.ptable th{text-align:right;padding:7px 8px;color:var(--muted);font-weight:600;border-bottom:0.5px solid var(--border);}
+.ptable td{padding:8px;border-bottom:0.5px solid #f0f0f0;}
+
+/* ══════════════════════════════════════════
+   PAGE 5 — SUPERVISOR (Mushrif Markaz)
+══════════════════════════════════════════ */
+#supervisorPage{flex-direction:column;background:#f5f5f5;min-height:100vh;}
+.sup-body{padding:2rem;max-width:1000px;margin:0 auto;width:100%;}
+.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem;}
+.metric{background:#fff;border-radius:14px;padding:1.2rem 1rem;border:0.5px solid var(--border);}
+.metric-icon{font-size:20px;margin-bottom:8px;display:block;}
+.metric-val{font-size:1.5rem;font-weight:700;display:block;margin-bottom:2px;}
+.metric-lbl{font-size:0.75rem;color:var(--muted);}
+.metric-badge{display:inline-block;font-size:0.7rem;font-weight:600;padding:2px 8px;border-radius:20px;margin-top:6px;}
+.two-col{display:grid;grid-template-columns:1.3fr 1fr;gap:1.2rem;margin-bottom:1.4rem;}
+.alerts-list{display:flex;flex-direction:column;gap:8px;}
+.alert-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:10px;font-size:0.82rem;line-height:1.5;}
+.alert-red{background:#fce8e8;color:#b71c1c;}
+.alert-yellow{background:#fff8e1;color:#8a6000;}
+.alert-green{background:#e6f4ea;color:#1e7e34;}
+.alert-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.dot-red{background:#b71c1c;}.dot-yellow{background:#e65100;}.dot-green{background:#1e7e34;}
+.centers-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.4rem;}
+.center-card{background:#fff;border-radius:14px;padding:1.2rem;border:0.5px solid var(--border);}
+.center-name{font-size:0.95rem;font-weight:700;margin-bottom:0.5rem;}
+.center-row{display:flex;justify-content:space-between;font-size:0.82rem;padding:3px 0;color:#555;}
+.center-bar-wrap{width:100%;height:6px;background:#f0f0f0;border-radius:3px;margin-top:0.6rem;overflow:hidden;}
+.center-bar{height:100%;border-radius:3px;}
+
+/* ══════════════════════════════════════════
+   PAGE 6 — IT SUPPORT / FEEDBACK
+══════════════════════════════════════════ */
+#supportPage{flex-direction:column;background:#f5f5f5;min-height:100vh;}
+.sup-feedback-body{padding:2rem;max-width:720px;margin:0 auto;width:100%;}
+.support-hero{background:var(--red);border-radius:18px;padding:2rem;text-align:center;color:#fff;margin-bottom:1.8rem;}
+.support-hero h2{font-size:1.5rem;font-weight:700;margin-bottom:0.4rem;}
+.support-hero p{font-size:0.88rem;opacity:0.85;}
+.feedback-card{background:#fff;border-radius:18px;padding:2rem;border:0.5px solid var(--border);margin-bottom:1.4rem;}
+.feedback-card h3{font-size:1.05rem;font-weight:700;margin-bottom:1.4rem;display:flex;align-items:center;gap:8px;}
+.form-group{margin-bottom:1.1rem;}
+.form-label{display:block;font-size:0.82rem;font-weight:600;color:#333;margin-bottom:0.4rem;}
+.form-input{width:100%;padding:0.73rem 1rem;border:1.5px solid var(--border);border-radius:10px;font-size:0.9rem;font-family:'Cairo',sans-serif;color:var(--text);background:var(--off);outline:none;transition:border-color 0.2s,box-shadow 0.2s;direction:rtl;}
+.form-input:focus{border-color:var(--red);background:#fff;box-shadow:0 0 0 3px rgba(200,16,46,0.08);}
+.form-input::placeholder{color:var(--light);}
+textarea.form-input{resize:vertical;min-height:110px;}
+.form-select{width:100%;padding:0.73rem 1rem;border:1.5px solid var(--border);border-radius:10px;font-size:0.9rem;font-family:'Cairo',sans-serif;color:var(--text);background:var(--off);outline:none;direction:rtl;cursor:pointer;}
+.form-select:focus{border-color:var(--red);}
+.priority-chips{display:flex;gap:0.6rem;flex-wrap:wrap;margin-top:0.4rem;}
+.chip{padding:6px 16px;border-radius:20px;border:1.5px solid var(--border);font-size:0.8rem;font-family:'Cairo',sans-serif;cursor:pointer;transition:all 0.2s;background:#fff;}
+.chip.active-low{border-color:#1e7e34;background:#e6f4ea;color:#1e7e34;font-weight:700;}
+.chip.active-med{border-color:#e65100;background:#fff3e0;color:#e65100;font-weight:700;}
+.chip.active-high{border-color:#b71c1c;background:#fce8e8;color:#b71c1c;font-weight:700;}
+.submit-btn{width:100%;padding:0.9rem;background:var(--red);color:#fff;border:none;border-radius:10px;font-size:1rem;font-weight:700;font-family:'Cairo',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background 0.2s;}
+.submit-btn:hover{background:var(--red-dark);}
+.success-msg{display:none;background:#e6f4ea;border:1px solid #a5d6a7;border-radius:12px;padding:1.2rem;text-align:center;color:#1e7e34;font-weight:600;font-size:0.92rem;}
+.success-msg.show{display:block;}
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.contact-item{background:#fff;border-radius:14px;padding:1.2rem;border:0.5px solid var(--border);display:flex;align-items:flex-start;gap:12px;}
+.contact-icon{font-size:1.4rem;flex-shrink:0;}
+.contact-label{font-size:0.75rem;color:var(--muted);margin-bottom:2px;}
+.contact-value{font-size:0.88rem;font-weight:600;}
+
+/* ══ RESPONSIVE ══ */
+@media(max-width:768px){
+  #loginPage{flex-direction:column;}.lp-left{display:none;}.lp-right{padding:2rem 1.4rem;}
+  .plans-wrap,.doctors-grid,.metric-grid,.two-col,.centers-grid,.contact-grid{grid-template-columns:1fr;}
+  .info-grid{grid-template-columns:1fr;}
+  .topbar{padding:0 1rem;}
+  .doc-body,.sup-body,.peri-body,.sup-feedback-body{padding:1rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════
+     PAGE 1 — LOGIN
+════════════════════════════════════ -->
+<div class="page active" id="loginPage">
+  <div class="lp-left">
+    <div class="logo-wrap anim">
+      <svg class="crescent" viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="50" r="46" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+        <path d="M64 22C52 24.5 40 35 40 50C40 65 52 75.5 66 75.5C58 80 49 81 40 78.5C24 73.5 14 61 14 50C14 35 25 22.5 40 18.5C48 16 56.5 17.5 64 22Z" fill="white" opacity="0.93"/>
+        <circle cx="72" cy="34" r="6" fill="white" opacity="0.88"/>
+        <line x1="74" y1="18" x2="74" y2="32" stroke="rgba(255,255,255,0.4)" stroke-width="2" stroke-linecap="round"/>
+        <line x1="67" y1="25" x2="81" y2="25" stroke="rgba(255,255,255,0.4)" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <div class="brand-name">منظمة الرعاية الصحية</div>
+      <div class="brand-sub">نظام مراقبة الأمراض المزمنة</div>
+    </div>
+    <div class="bar anim d1"></div>
+    <div class="stats anim d2">
+      <div class="stat"><span class="stat-ic">🫀</span><span class="stat-n">٢٤١</span><span class="stat-l">مريض قلب</span></div>
+      <div class="stat"><span class="stat-ic">🩸</span><span class="stat-n">١٨٦</span><span class="stat-l">مريض سكري</span></div>
+      <div class="stat"><span class="stat-ic">📊</span><span class="stat-n">١٥٣</span><span class="stat-l">ضغط الدم</span></div>
+      <div class="stat"><span class="stat-ic">✅</span><span class="stat-n">٩٨٪</span><span class="stat-l">نشاط النظام</span></div>
+    </div>
+  </div>
+  <div class="lp-right">
+    <div class="lbox">
+      <p class="login-tag anim">مرحباً بك</p>
+      <h1 class="anim d1">تسجيل الدخول</h1>
+      <p class="desc anim d1">أدخل بيانات حسابك للوصول إلى نظام مراقبة المرضى</p>
+      <button class="google-btn anim d2" onclick="signInWithGoogle()">
+        <svg class="google-logo" viewBox="0 0 48 48">
+          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.36-8.16 2.36-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+        </svg>
+        تسجيل الدخول عبر Google
+      </button>
+      <div class="or-div anim d2"><div class="or-line"></div><span class="or-t">أو بالبريد الإلكتروني</span><div class="or-line"></div></div>
+      <div class="fg anim d3">
+        <label class="fl">البريد الإلكتروني</label>
+        <div class="fw">
+          <span class="fic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></span>
+          <input class="fi" type="email" id="emailInput" placeholder="example@gmail.com" autocomplete="email"/>
+        </div>
+      </div>
+      <div class="fg anim d3">
+        <label class="fl">كلمة المرور</label>
+        <div class="fw">
+          <span class="fic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+          <input class="fi" type="password" id="passInput" placeholder="••••••••" autocomplete="current-password"/>
+        </div>
+      </div>
+      <div class="row-rem anim d3">
+        <label class="rlabel"><input type="checkbox"/> <span>تذكرني</span></label>
+        <a href="#" class="forgotl">نسيت كلمة المرور؟</a>
+      </div>
+      <button class="main-btn anim d4" onclick="doLogin()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        دخول إلى النظام
+      </button>
+      <div class="or-div anim d4" style="margin:1.2rem 0 0.9rem;"><div class="or-line"></div><span class="or-t">أو الدخول حسب التخصص</span><div class="or-line"></div></div>
+      <!-- ONLY 2 role buttons now -->
+      <div class="role-grid anim d4" style="grid-template-columns:1fr 1fr;">
+        <button class="role-btn" onclick="goToPage('doctorsPage','loginPage')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>طبيب أخصائي
+        </button>
+        <button class="role-btn" onclick="goToPage('supervisorPage','loginPage')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>مشرف مركز
+        </button>
+      </div>
+      <p class="fn anim d4">للدعم الفني <a onclick="goToPage('supportPage','loginPage')">فريق تقنية المعلومات</a> &nbsp;|&nbsp; v2.6.0</p>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     PAGE 2 — PLAN SELECTION
+════════════════════════════════════ -->
+<div class="page" id="planPage">
+  <div style="padding:1.5rem 2rem 0;width:100%;">
+    <button class="back-btn" onclick="goBack()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      رجوع
+    </button>
+  </div>
+  <div style="display:flex;flex-direction:column;align-items:center;padding:1rem 1.5rem 2.5rem;width:100%;">
+    <div class="plan-header anim">
+      <div class="user-avatar" id="planAvatar">م</div>
+      <h2>اختر خطة المراقبة</h2>
+      <p id="planWelcome">مرحباً، اختر الخطة المناسبة لطبيعة عملك</p>
+    </div>
+    <div class="plans-wrap">
+      <!-- 24/7 — LOCKED / COMING SOON -->
+      <div class="plan-card locked anim d1">
+        <div class="plan-badge cs">قريباً</div>
+        <div class="plan-icon" style="background:#f0f0f0;">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div class="plan-title" style="color:#999;">رقابة مستمرة 24/7</div>
+        <div class="plan-sub">مراقبة لحظية لجميع مرضى الأمراض المزمنة مع تنبيهات فورية عند أي تغير حرج</div>
+        <ul class="plan-feats" style="opacity:0.5;">
+          <li>متابعة لحظية لقراءات القلب والسكر والضغط</li>
+          <li>تنبيهات فورية عند القيم الحرجة</li>
+          <li>لوحة تحكم شاملة للمرضى</li>
+          <li>سجل تفصيلي لكل مريض</li>
+          <li>تحليل ذكاء اصطناعي للتقارير الطبية</li>
+        </ul>
+        <div class="coming-soon-banner">🔒 هذه الخطة ستكون متاحة قريباً</div>
+        <button class="select-plan-btn cs-btn" disabled>غير متاح حالياً</button>
+      </div>
+      <!-- PERIODIC — ACTIVE -->
+      <div class="plan-card featured anim d2">
+        <div class="plan-badge">متاح الآن</div>
+        <div class="plan-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#C8102E" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <div class="plan-title">رقابة دورية</div>
+        <div class="plan-sub">قراءة وتحليل التقارير الطبية الدورية القادمة من المستوصف مع توضيح النتائج</div>
+        <ul class="plan-feats">
+          <li>رفع تقارير المستوصف (صورة أو PDF)</li>
+          <li>قراءة التشخيص بالذكاء الاصطناعي</li>
+          <li>توضيح النتائج بلغة مبسطة</li>
+          <li>تصنيف القيم (طبيعي / مرتفع / منخفض)</li>
+          <li>سجل التقارير السابقة</li>
+        </ul>
+        <button class="select-plan-btn" onclick="goToPage('periodicPage','planPage')">اختر هذه الخطة ←</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     PAGE 3 — PERIODIC
+════════════════════════════════════ -->
+<div class="page" id="periodicPage">
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="back-btn" onclick="goBack()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>رجوع
+      </button>
+      <div class="topbar-logo">
+        <svg width="26" height="26" viewBox="0 0 100 100" fill="none"><path d="M64 22C52 24.5 40 35 40 50C40 65 52 75.5 66 75.5C58 80 49 81 40 78.5C24 73.5 14 61 14 50C14 35 25 22.5 40 18.5C48 16 56.5 17.5 64 22Z" fill="#C8102E"/><circle cx="72" cy="34" r="6" fill="#C8102E" opacity="0.7"/></svg>
+        <span>الرعاية الصحية</span>
+      </div>
+      <span class="plan-tag">رقابة دورية</span>
+    </div>
+    <div class="topbar-right">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="topbar-avatar" id="periAvatar">م</div>
+        <span class="topbar-name" id="periName">المستخدم</span>
+      </div>
+      <button class="logout-btn" onclick="logout()">تسجيل الخروج</button>
+    </div>
+  </div>
+  <div class="peri-body">
+    <div class="dash-title anim">رفع وتحليل التقرير الطبي</div>
+    <div class="dash-sub anim d1">ارفع تقرير المستوصف وسيقوم الذكاء الاصطناعي بقراءة النتائج وتوضيحها</div>
+    <div class="upload-card anim d1">
+      <h3>📋 رفع التقرير الطبي</h3>
+      <p>ارفع صورة واضحة أو ملف PDF للتقرير الطبي من المستوصف أو المختبر</p>
+      <div class="upload-zone" id="uz2">
+        <input type="file" id="uf2" accept="image/*,.pdf" onchange="handleFile(event,'2')"/>
+        <span class="upload-icon">📤</span>
+        <div class="upload-title">اسحب التقرير هنا أو انقر للاختيار</div>
+        <div class="upload-sub">يدعم صور JPG / PNG وملفات PDF</div>
+      </div>
+      <div class="file-preview" id="fp2">
+        <span>📄</span>
+        <span class="file-preview-name" id="fn2">—</span>
+        <span class="file-preview-size" id="fs2">—</span>
+        <button class="file-remove" onclick="removeFile('2')">✕</button>
+      </div>
+      <button class="analyze-btn" id="ab2" onclick="analyzeReport('2')" disabled>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        تحليل التقرير الآن
+      </button>
+    </div>
+    <div class="ai-result" id="ar2"></div>
+    <div class="hist-card anim d2" style="margin-top:1.4rem;">
+      <h3>📁 سجل التقارير السابقة</h3>
+      <table class="htable">
+        <thead><tr><th>التاريخ</th><th>نوع التقرير</th><th>النتيجة</th><th>عرض</th></tr></thead>
+        <tbody>
+          <tr><td>١٥ مارس ٢٠٢٥</td><td>تحليل دم شامل</td><td><span class="status-pill badge-ok">طبيعي</span></td><td><button class="view-btn">عرض</button></td></tr>
+          <tr><td>٢٨ يناير ٢٠٢٥</td><td>سكر + ضغط</td><td><span class="status-pill badge-warn">متابعة</span></td><td><button class="view-btn">عرض</button></td></tr>
+          <tr><td>٥ ديسمبر ٢٠٢٤</td><td>أشعة قلب ECG</td><td><span class="status-pill badge-ok">طبيعي</span></td><td><button class="view-btn">عرض</button></td></tr>
+          <tr><td>١٢ أكتوبر ٢٠٢٤</td><td>تحليل بول + دم</td><td><span class="status-pill badge-danger">قيم حرجة</span></td><td><button class="view-btn">عرض</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     PAGE 4 — DOCTORS
+════════════════════════════════════ -->
+<div class="page" id="doctorsPage">
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="back-btn" onclick="goBack()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>رجوع
+      </button>
+      <div class="topbar-logo">
+        <svg width="26" height="26" viewBox="0 0 100 100" fill="none"><path d="M64 22C52 24.5 40 35 40 50C40 65 52 75.5 66 75.5C58 80 49 81 40 78.5C24 73.5 14 61 14 50C14 35 25 22.5 40 18.5C48 16 56.5 17.5 64 22Z" fill="#C8102E"/><circle cx="72" cy="34" r="6" fill="#C8102E" opacity="0.7"/></svg>
+        <span>الرعاية الصحية</span>
+      </div>
+      <span class="plan-tag">الأطباء الأخصائيون</span>
+    </div>
+    <div class="topbar-right">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="topbar-avatar" id="docAvatar">م</div>
+        <span class="topbar-name" id="docName">المستخدم</span>
+      </div>
+      <button class="logout-btn" onclick="logout()">تسجيل الخروج</button>
+    </div>
+  </div>
+  <div class="doc-body">
+    <div class="dash-title anim">فريق الأطباء الأخصائيين</div>
+    <div class="dash-sub anim d1">اضغط على أي طبيب لعرض معلوماته التفصيلية وقائمة مرضاه</div>
+    <div class="doctors-grid anim d2" id="doctorsGrid"></div>
+  </div>
+</div>
+
+<!-- Doctor Modal -->
+<div class="modal-overlay" id="doctorModal">
+  <div class="modal" id="modalContent">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <!-- filled dynamically -->
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     PAGE 5 — SUPERVISOR
+════════════════════════════════════ -->
+<div class="page" id="supervisorPage">
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="back-btn" onclick="goBack()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>رجوع
+      </button>
+      <div class="topbar-logo">
+        <svg width="26" height="26" viewBox="0 0 100 100" fill="none"><path d="M64 22C52 24.5 40 35 40 50C40 65 52 75.5 66 75.5C58 80 49 81 40 78.5C24 73.5 14 61 14 50C14 35 25 22.5 40 18.5C48 16 56.5 17.5 64 22Z" fill="#C8102E"/><circle cx="72" cy="34" r="6" fill="#C8102E" opacity="0.7"/></svg>
+        <span>الرعاية الصحية</span>
+      </div>
+      <span class="plan-tag">مشرف المركز</span>
+    </div>
+    <div class="topbar-right">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="topbar-avatar" id="supAvatar">م</div>
+        <span class="topbar-name" id="supName">المستخدم</span>
+      </div>
+      <button class="logout-btn" onclick="logout()">تسجيل الخروج</button>
+    </div>
+  </div>
+  <div class="sup-body">
+    <div class="dash-title anim">لوحة مشرف المركز</div>
+    <div class="dash-sub anim d1">نظرة شاملة على أداء المراكز الصحية والمرضى</div>
+    <div class="metric-grid anim d1">
+      <div class="metric"><span class="metric-icon">🏥</span><span class="metric-val">٦</span><span class="metric-lbl">مراكز صحية نشطة</span><span class="metric-badge badge-ok">جميعها مفتوحة</span></div>
+      <div class="metric"><span class="metric-icon">👥</span><span class="metric-val">٥٨٠</span><span class="metric-lbl">إجمالي المرضى</span><span class="metric-badge badge-ok">طبيعي</span></div>
+      <div class="metric"><span class="metric-icon">🚨</span><span class="metric-val">٧</span><span class="metric-lbl">حالات حرجة اليوم</span><span class="metric-badge badge-danger">تتطلب متابعة</span></div>
+      <div class="metric"><span class="metric-icon">📋</span><span class="metric-val">٤٣</span><span class="metric-lbl">تقارير مرفوعة اليوم</span><span class="metric-badge badge-ok">محدّثة</span></div>
+    </div>
+    <div class="two-col anim d2">
+      <div class="card">
+        <div class="card-title">🏥 أداء المراكز الصحية</div>
+        <div class="centers-grid">
+          <div class="center-card">
+            <div class="center-name">مركز الكرخ الصحي</div>
+            <div class="center-row"><span>المرضى</span><span>١٢٤</span></div>
+            <div class="center-row"><span>الحالات الحرجة</span><span style="color:#b71c1c;font-weight:700;">٣</span></div>
+            <div class="center-row"><span>نسبة الإشغال</span><span>٨٢٪</span></div>
+            <div class="center-bar-wrap"><div class="center-bar" style="width:82%;background:#C8102E;"></div></div>
+          </div>
+          <div class="center-card">
+            <div class="center-name">مركز الرصافة</div>
+            <div class="center-row"><span>المرضى</span><span>٩٨</span></div>
+            <div class="center-row"><span>الحالات الحرجة</span><span style="color:#e65100;font-weight:700;">١</span></div>
+            <div class="center-row"><span>نسبة الإشغال</span><span>٦٥٪</span></div>
+            <div class="center-bar-wrap"><div class="center-bar" style="width:65%;background:#e65100;"></div></div>
+          </div>
+          <div class="center-card">
+            <div class="center-name">مركز المنصور</div>
+            <div class="center-row"><span>المرضى</span><span>١١٠</span></div>
+            <div class="center-row"><span>الحالات الحرجة</span><span style="color:#b71c1c;font-weight:700;">٢</span></div>
+            <div class="center-row"><span>نسبة الإشغال</span><span>٧٣٪</span></div>
+            <div class="center-bar-wrap"><div class="center-bar" style="width:73%;background:#C8102E;"></div></div>
+          </div>
+          <div class="center-card">
+            <div class="center-name">مركز الأعظمية</div>
+            <div class="center-row"><span>المرضى</span><span>٨٧</span></div>
+            <div class="center-row"><span>الحالات الحرجة</span><span style="color:#1e7e34;font-weight:700;">٠</span></div>
+            <div class="center-row"><span>نسبة الإشغال</span><span>٥٨٪</span></div>
+            <div class="center-bar-wrap"><div class="center-bar" style="width:58%;background:#1e7e34;"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">🔔 تنبيهات المراكز</div>
+        <div class="alerts-list">
+          <div class="alert-item alert-red"><div class="alert-dot dot-red"></div><div>مركز الكرخ — ٣ حالات ضغط حرج تتطلب تدخلاً فورياً</div></div>
+          <div class="alert-item alert-red"><div class="alert-dot dot-red"></div><div>مركز المنصور — مريضان سكري تجاوزا حد ٢٥٠ mg/dL</div></div>
+          <div class="alert-item alert-yellow"><div class="alert-dot dot-yellow"></div><div>مركز الرصافة — طاقم التمريض ناقص اليوم بنسبة ٣٠٪</div></div>
+          <div class="alert-item alert-yellow"><div class="alert-dot dot-yellow"></div><div>مركز الكاظمية — صيانة مقررة غداً ٨ص–١٢ظ</div></div>
+          <div class="alert-item alert-green"><div class="alert-dot dot-green"></div><div>مركز الأعظمية — لا توجد حالات حرجة، الأداء ممتاز</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card anim d3">
+      <div class="card-title">👥 المرضى الحرجون — عرض موحد</div>
+      <table class="ptable">
+        <thead><tr><th>المريض</th><th>المركز</th><th>المرض</th><th>آخر قراءة</th><th>الحالة</th></tr></thead>
+        <tbody>
+          <tr><td>سارة محمود</td><td>الكرخ</td><td>سكري</td><td>260 mg/dL</td><td><span class="status-pill badge-danger">حرج</span></td></tr>
+          <tr><td>علي الكريم</td><td>الكرخ</td><td>قلب + ضغط</td><td>175/112 mmHg</td><td><span class="status-pill badge-danger">حرج</span></td></tr>
+          <tr><td>محمد السعدي</td><td>المنصور</td><td>سكري</td><td>252 mg/dL</td><td><span class="status-pill badge-danger">حرج</span></td></tr>
+          <tr><td>حسين الأنصاري</td><td>الرصافة</td><td>سكري</td><td>غائب 3 ساعات</td><td><span class="status-pill badge-warn">متابعة</span></td></tr>
+          <tr><td>خالد إبراهيم</td><td>المنصور</td><td>ضغط دم</td><td>128/84 mmHg</td><td><span class="status-pill badge-ok">محسّن</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     PAGE 6 — IT SUPPORT / FEEDBACK
+════════════════════════════════════ -->
+<div class="page" id="supportPage">
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="back-btn" onclick="goBack()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>رجوع
+      </button>
+      <div class="topbar-logo">
+        <svg width="26" height="26" viewBox="0 0 100 100" fill="none"><path d="M64 22C52 24.5 40 35 40 50C40 65 52 75.5 66 75.5C58 80 49 81 40 78.5C24 73.5 14 61 14 50C14 35 25 22.5 40 18.5C48 16 56.5 17.5 64 22Z" fill="#C8102E"/><circle cx="72" cy="34" r="6" fill="#C8102E" opacity="0.7"/></svg>
+        <span>الرعاية الصحية</span>
+      </div>
+      <span class="plan-tag">الدعم التقني</span>
+    </div>
+    <div class="topbar-right">
+      <button class="logout-btn" onclick="goBack()">رجوع للرئيسية</button>
+    </div>
+  </div>
+  <div class="sup-feedback-body">
+    <div class="support-hero anim">
+      <h2>🛠️ فريق تقنية المعلومات</h2>
+      <p>هل واجهت مشكلة أو عندك اقتراح؟ راسلنا وسنرد خلال ٢٤ ساعة عمل</p>
+    </div>
+    <div class="feedback-card anim d1">
+      <h3>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C8102E" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        إرسال رسالة / Feedback
+      </h3>
+      <div class="form-group">
+        <label class="form-label">الاسم الكامل</label>
+        <input class="form-input" type="text" id="fbName" placeholder="أدخل اسمك الكامل"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">البريد الإلكتروني</label>
+        <input class="form-input" type="email" id="fbEmail" placeholder="example@health.gov.iq"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">نوع الطلب</label>
+        <select class="form-select" id="fbType">
+          <option value="">— اختر نوع الطلب —</option>
+          <option value="bug">🐛 تبليغ عن خطأ / مشكلة تقنية</option>
+          <option value="feature">💡 اقتراح ميزة جديدة</option>
+          <option value="account">🔑 مشكلة في حساب أو صلاحيات</option>
+          <option value="performance">⚡ بطء أو مشكلة في الأداء</option>
+          <option value="data">📊 مشكلة في البيانات أو التقارير</option>
+          <option value="other">📝 أخرى</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">درجة الأولوية</label>
+        <div class="priority-chips">
+          <button class="chip" onclick="setPriority('low',this)">🟢 منخفضة</button>
+          <button class="chip" onclick="setPriority('med',this)">🟡 متوسطة</button>
+          <button class="chip" onclick="setPriority('high',this)">🔴 عالية / عاجلة</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">تفاصيل الرسالة</label>
+        <textarea class="form-input" id="fbMsg" placeholder="اشرح المشكلة أو الاقتراح بالتفصيل..."></textarea>
+      </div>
+      <button class="submit-btn" onclick="submitFeedback()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        إرسال الرسالة
+      </button>
+      <div class="success-msg" id="successMsg" style="margin-top:1rem;">
+        ✅ تم إرسال رسالتك بنجاح! سيتواصل معك فريق تقنية المعلومات خلال ٢٤ ساعة عمل.
+      </div>
+    </div>
+    <div class="anim d2">
+      <div class="card-title" style="margin-bottom:1rem;">📞 بيانات التواصل المباشر</div>
+      <div class="contact-grid">
+        <div class="contact-item">
+          <div class="contact-icon">📧</div>
+          <div><div class="contact-label">البريد الإلكتروني</div><div class="contact-value">it-support@health.gov.iq</div></div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">📞</div>
+          <div><div class="contact-label">الهاتف المباشر</div><div class="contact-value">٠٧٧٠٠٠٠١٢٣٤</div></div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">⏰</div>
+          <div><div class="contact-label">ساعات العمل</div><div class="contact-value">الأحد–الخميس، ٨ص–٤م</div></div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">🚨</div>
+          <div><div class="contact-label">طوارئ تقنية (٢٤/٧)</div><div class="contact-value">٠٧٨٠٠٠٠٥٦٧٨</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══ DATA ══
+const DOCTORS = [
+  { id:1, name:'د. أحمد الزيدي', spec:'قلب وأوعية دموية', color:'#C8102E', avail:'available', exp:'١٢ سنة', patients:48, today:6, phone:'٠٧٧٠١١١٢٢٣٣', email:'a.zaidi@health.gov.iq', center:'مركز الكرخ',
+    list:[{n:'علي الكريم',d:'قلب + ضغط',s:'حرج'},{n:'خالد إبراهيم',d:'ضغط دم',s:'محسّن'},{n:'عمر السامرائي',d:'قلب',s:'مستقر'},{n:'منى حسن',d:'قصور قلبي',s:'مستقر'}]},
+  { id:2, name:'د. سارة الموسوي', spec:'سكري وغدد صماء', color:'#8a0a1e', avail:'busy', exp:'٨ سنوات', patients:62, today:9, phone:'٠٧٧٠٢٢٢٣٣٤٤', email:'s.musawi@health.gov.iq', center:'مركز الرصافة',
+    list:[{n:'سارة محمود',d:'سكري',s:'حرج'},{n:'حسين الأنصاري',d:'سكري',s:'متابعة'},{n:'محمد السعدي',d:'سكري',s:'مستقر'},{n:'فاطمة جواد',d:'سكري نوع ٢',s:'مستقر'}]},
+  { id:3, name:'د. علي الجبوري', spec:'ضغط الدم والكلى', color:'#5a1a1a', avail:'available', exp:'١٥ سنة', patients:54, today:7, phone:'٠٧٧٠٣٣٣٤٤٥٥', email:'a.jabouri@health.gov.iq', center:'مركز المنصور',
+    list:[{n:'أحمد الجميلي',d:'ضغط دم',s:'مستقر'},{n:'نور الدين',d:'ضغط + كلى',s:'متابعة'},{n:'رنا العبيدي',d:'ضغط دم',s:'مستقر'}]},
+  { id:4, name:'د. نور الراشدي', spec:'الأمراض الباطنية', color:'#7a1a2a', avail:'available', exp:'١٠ سنوات', patients:39, today:5, phone:'٠٧٧٠٤٤٤٥٥٦٦', email:'n.rashdi@health.gov.iq', center:'مركز الأعظمية',
+    list:[{n:'كريم الصاحب',d:'سكري + ضغط',s:'مستقر'},{n:'رسل العزاوي',d:'ضغط دم',s:'مستقر'},{n:'سلام النعيمي',d:'أمراض باطنية',s:'مستقر'}]},
+  { id:5, name:'د. حسن الطائي', spec:'الشيخوخة والأمراض المزمنة', color:'#a01020', avail:'leave', exp:'٢٠ سنة', patients:71, today:0, phone:'٠٧٧٠٥٥٥٦٦٧٧', email:'h.taai@health.gov.iq', center:'مركز الكاظمية',
+    list:[{n:'عبد الله سليم',d:'قلب + سكري',s:'مستقر'},{n:'أم حسن',d:'ضغط دم',s:'مستقر'}]},
+  { id:6, name:'د. زينب الحيدري', spec:'قلب الأطفال والبالغين', color:'#c01828', avail:'available', exp:'٦ سنوات', patients:33, today:4, phone:'٠٧٧٠٦٦٦٧٧٨٨', email:'z.haidari@health.gov.iq', center:'مركز الكرخ',
+    list:[{n:'ليلى رضا',d:'قلب',s:'مستقر'},{n:'سامي موسى',d:'قلب خلقي',s:'متابعة'}]},
+];
+
+const availMap = { available:{label:'متاح الآن',dot:'avail-green'}, busy:{label:'مشغول',dot:'avail-yellow'}, leave:{label:'إجازة',dot:'avail-red'} };
+
+// ══ BROWSER HISTORY NAVIGATION ══
+function currentPage() {
+  return document.querySelector('.page.active')?.id || 'loginPage';
+}
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const el = document.getElementById(id);
+  if (el) { el.classList.add('active'); window.scrollTo(0,0); }
+}
+
+// Navigate forward — pushes a real browser history entry
+function goToPage(target, _from) {
+  window.history.pushState({ page: target }, '', '#' + target);
+  showPage(target);
+}
+
+// In-page back button — delegates to browser back
+function goBack() {
+  window.history.back();
+}
+
+// Browser ← / → buttons fire popstate
+window.addEventListener('popstate', function(e) {
+  const pageId = (e.state && e.state.page) ? e.state.page : 'loginPage';
+  showPage(pageId);
+});
+
+// On first load, record the initial state so the first back works
+window.history.replaceState({ page: 'loginPage' }, '', '#loginPage');
+
+// ══ USER STATE ══
+let currentUser = { name:'المستخدم', email:'', avatar:'م' };
+
+function setUser(name, email) {
+  currentUser = { name, email, avatar: name.charAt(0) };
+  ['planAvatar','periAvatar','docAvatar','supAvatar'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.textContent = currentUser.avatar;
+  });
+  ['periName','docName','supName'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.textContent = currentUser.name;
+  });
+  const pw = document.getElementById('planWelcome');
+  if (pw) pw.textContent = `مرحباً ${name}، اختر الخطة المناسبة لطبيعة عملك`;
+}
+
+// ══ LOGIN ══
+function doLogin() {
+  const email = document.getElementById('emailInput').value.trim();
+  const pass = document.getElementById('passInput').value;
+  if (!email || !pass) { alert('يرجى إدخال البريد الإلكتروني وكلمة المرور'); return; }
+  const name = email.split('@')[0].replace(/[._]/g, ' ');
+  setUser(name, email);
+  goToPage('planPage', 'loginPage');
+}
+
+function signInWithGoogle() {
+  const names = ['محمد الأنصاري','سارة العمري','علي الحسيني','فاطمة الكريم','أحمد البصري'];
+  const name = names[Math.floor(Math.random()*names.length)];
+  setUser(name, name.replace(/ /g,'')+'.health@gmail.com');
+  goToPage('planPage','loginPage');
+}
+
+function logout() {
+  history.length = 0;
+  showPage('loginPage');
+  document.getElementById('emailInput').value = '';
+  document.getElementById('passInput').value = '';
+}
+
+// ══ DOCTORS PAGE ══
+function buildDoctorsGrid() {
+  const grid = document.getElementById('doctorsGrid');
+  if (!grid) return;
+  grid.innerHTML = DOCTORS.map(d => {
+    const av = availMap[d.avail];
+    return `<div class="doctor-card" onclick="openDoctor(${d.id})">
+      <div class="doctor-avatar" style="background:${d.color};">${d.name.charAt(2)}</div>
+      <div class="doctor-name">${d.name}</div>
+      <div class="doctor-spec">${d.spec}</div>
+      <div class="doctor-stats">
+        <span>👥 ${d.patients} مريض</span>
+        <span>📅 ${d.today} اليوم</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:0.78rem;color:#555;">
+        <span class="avail-dot ${av.dot}"></span>${av.label}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openDoctor(id) {
+  const d = DOCTORS.find(x => x.id===id);
+  if (!d) return;
+  const av = availMap[d.avail];
+  const rowsHTML = d.list.map(p => {
+    const cls = p.s==='حرج'?'badge-danger':p.s==='متابعة'?'badge-warn':'badge-ok';
+    return `<tr><td>${p.n}</td><td>${p.d}</td><td><span class="status-pill ${cls}">${p.s}</span></td></tr>`;
+  }).join('');
+  document.getElementById('modalContent').innerHTML = `
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-header">
+      <div class="modal-avatar" style="background:${d.color};">${d.name.charAt(2)}</div>
+      <div>
+        <div class="modal-name">${d.name}</div>
+        <div class="modal-spec">${d.spec}</div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:0.78rem;color:#555;margin-top:4px;">
+          <span class="avail-dot ${av.dot}"></span>${av.label}
+        </div>
+      </div>
+    </div>
+    <div class="info-grid">
+      <div class="info-item"><div class="info-label">المركز الصحي</div><div class="info-value">${d.center}</div></div>
+      <div class="info-item"><div class="info-label">سنوات الخبرة</div><div class="info-value">${d.exp}</div></div>
+      <div class="info-item"><div class="info-label">إجمالي المرضى</div><div class="info-value">${d.patients} مريض</div></div>
+      <div class="info-item"><div class="info-label">مرضى اليوم</div><div class="info-value">${d.today} مراجعة</div></div>
+      <div class="info-item"><div class="info-label">الهاتف</div><div class="info-value" style="direction:ltr;text-align:right;">${d.phone}</div></div>
+      <div class="info-item"><div class="info-label">البريد الإلكتروني</div><div class="info-value" style="font-size:0.78rem;">${d.email}</div></div>
+    </div>
+    <div class="patients-mini">
+      <h4>قائمة المرضى الحاليين</h4>
+      <table class="ptable">
+        <thead><tr><th>المريض</th><th>المرض</th><th>الحالة</th></tr></thead>
+        <tbody>${rowsHTML}</tbody>
+      </table>
+    </div>`;
+  document.getElementById('doctorModal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('doctorModal').classList.remove('show');
+}
+
+// ══ FEEDBACK ══
+let selectedPriority = '';
+function setPriority(level, el) {
+  selectedPriority = level;
+  document.querySelectorAll('.chip').forEach(c => c.className='chip');
+  el.classList.add('active-' + level);
+}
+
+function submitFeedback() {
+  const name = document.getElementById('fbName').value.trim();
+  const email = document.getElementById('fbEmail').value.trim();
+  const type = document.getElementById('fbType').value;
+  const msg = document.getElementById('fbMsg').value.trim();
+  if (!name||!email||!type||!msg) { alert('يرجى ملء جميع الحقول المطلوبة'); return; }
+  document.getElementById('successMsg').classList.add('show');
+  document.getElementById('fbName').value='';
+  document.getElementById('fbEmail').value='';
+  document.getElementById('fbType').value='';
+  document.getElementById('fbMsg').value='';
+  document.querySelectorAll('.chip').forEach(c=>c.className='chip');
+  selectedPriority='';
+  setTimeout(()=>document.getElementById('successMsg').classList.remove('show'), 5000);
+}
+
+// ══ FILE HANDLING ══
+let selectedFile = {'2':null};
+function handleFile(event, slot) {
+  const file = event.target.files[0]; if (!file) return;
+  selectedFile[slot] = file;
+  document.getElementById('fn'+slot).textContent = file.name;
+  document.getElementById('fs'+slot).textContent = (file.size/1024).toFixed(1)+' KB';
+  document.getElementById('fp'+slot).classList.add('show');
+  document.getElementById('ab'+slot).disabled = false;
+}
+function removeFile(slot) {
+  selectedFile[slot]=null;
+  document.getElementById('fp'+slot).classList.remove('show');
+  document.getElementById('ab'+slot).disabled=true;
+  document.getElementById('uf'+slot).value='';
+  const ar=document.getElementById('ar'+slot);
+  ar.classList.remove('show'); ar.innerHTML='';
+}
+
+// ══ AI ANALYSIS ══
+async function analyzeReport(slot) {
+  const file = selectedFile[slot]; if (!file) return;
+  const btn = document.getElementById('ab'+slot);
+  const ar = document.getElementById('ar'+slot);
+  btn.disabled=true;
+  btn.innerHTML='<span class="spinner"></span> جاري التحليل...';
+  const base64 = await fileToBase64(file);
+  const prompt=`أنت طبيب متخصص في تحليل التقارير الطبية لمرضى الأمراض المزمنة (القلب، السكر، ضغط الدم).
+قم بتحليل هذا التقرير وأعطِ إجابة بالعربية في JSON فقط (بلا نص خارج JSON):
+{"summary":"ملخص التقرير","readings":[{"name":"اسم المقياس","value":"القيمة","unit":"الوحدة","status":"normal|high|low"}],"diagnosis":"التشخيص العام","recommendations":["توصية 1","توصية 2","توصية 3"],"urgency":"routine|followup|urgent"}`;
+  try {
+    const messages=[];
+    if (file.type.startsWith('image/')) {
+      messages.push({role:'user',content:[{type:'image',source:{type:'base64',media_type:file.type,data:base64}},{type:'text',text:prompt}]});
+    } else {
+      messages.push({role:'user',content:[{type:'document',source:{type:'base64',media_type:'application/pdf',data:base64}},{type:'text',text:prompt}]});
+    }
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages})});
+    const data=await res.json();
+    const text=data.content?.map(i=>i.text||'').join('')||'';
+    let result;
+    try{result=JSON.parse(text.replace(/```json|```/g,'').trim());}catch{result=null;}
+    renderResult(ar,result,file.name);
+  } catch(e){ renderError(ar,'حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى.'); }
+  btn.disabled=false;
+  btn.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> تحليل مرة أخرى';
+}
+
+function renderResult(container,result,filename){
+  if(!result){renderError(container,'تعذّر قراءة التقرير. يرجى التأكد من وضوح الصورة.');return;}
+  const urgMap={routine:{label:'روتيني',cls:'badge-ok'},followup:{label:'يحتاج متابعة',cls:'badge-warn'},urgent:{label:'عاجل',cls:'badge-danger'}};
+  const urg=urgMap[result.urgency]||urgMap.routine;
+  const stMap={normal:{label:'طبيعي',cls:'val-normal'},high:{label:'مرتفع',cls:'val-high'},low:{label:'منخفض',cls:'val-low'}};
+  const rdHTML=result.readings?.map(r=>{const s=stMap[r.status]||stMap.normal;return`<div class="ai-row"><span class="ai-key">${r.name}</span><span class="ai-val ${s.cls}">${r.value} ${r.unit||''} — ${s.label}</span></div>`;}).join('')||'';
+  const rcHTML=result.recommendations?.map(r=>`<div class="ai-row"><span>• ${r}</span></div>`).join('')||'';
+  container.innerHTML=`
+    <div class="ai-header">
+      <div class="ai-avatar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg></div>
+      <div><div class="ai-name">تحليل الذكاء الاصطناعي</div><div class="ai-sub">${filename} — <span class="status-pill ${urg.cls}" style="font-size:.7rem;padding:2px 8px;">${urg.label}</span></div></div>
+    </div>
+    <div class="ai-body">
+      <div class="ai-section"><div class="ai-section-title">📝 ملخص التقرير</div><div style="font-size:.86rem;line-height:1.8;color:#444;">${result.summary||'—'}</div></div>
+      ${rdHTML?`<div class="ai-section"><div class="ai-section-title">📊 نتائج القياسات</div>${rdHTML}</div>`:''}
+      <div class="ai-section"><div class="ai-section-title">🏥 التشخيص العام</div><div style="font-size:.86rem;line-height:1.8;color:#444;">${result.diagnosis||'—'}</div></div>
+      ${rcHTML?`<div class="ai-section"><div class="ai-section-title">💡 التوصيات</div>${rcHTML}</div>`:''}
+    </div>`;
+  container.classList.add('show');
+}
+function renderError(container,msg){container.innerHTML=`<div style="text-align:center;padding:2rem;color:#b71c1c;font-size:.88rem;"><div style="font-size:2rem;margin-bottom:.5rem;">⚠️</div><div>${msg}</div></div>`;container.classList.add('show');}
+function fileToBase64(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=()=>rej(new Error('فشل قراءة الملف'));r.readAsDataURL(file);});}
+
+// drag/drop
+const uz2=document.getElementById('uz2');
+if(uz2){
+  uz2.addEventListener('dragover',e=>{e.preventDefault();uz2.classList.add('drag');});
+  uz2.addEventListener('dragleave',()=>uz2.classList.remove('drag'));
+  uz2.addEventListener('drop',e=>{e.preventDefault();uz2.classList.remove('drag');const f=e.dataTransfer.files[0];if(f)handleFile({target:{files:[f]}},'2');});
+}
+
+// ══ INIT ══
+buildDoctorsGrid();
+</script>
+</body>
+</html>
